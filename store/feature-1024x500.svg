@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#16946b"/><stop offset="1" stop-color="#0a5640"/></linearGradient></defs>
+  <rect width="1024" height="500" fill="url(#g)"/>
+  <circle cx="860" cy="250" r="300" fill="#ffffff" fill-opacity=".05"/>
+  <g transform="translate(860 262) scale(0.5) translate(-512 -540)"><circle cx="512" cy="540" r="330" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="44"/>
+    <circle cx="512" cy="540" r="330" fill="none" stroke="#9be7c4" stroke-width="44" stroke-linecap="round" stroke-dasharray="1534.3538520132547 2073.4511513692632" transform="rotate(-90 512 540)"/>
+    <path d="M432,452 c-34,-30 34,-52 0,-82 c-34,-30 34,-52 0,-82" fill="none" stroke="#fff" stroke-width="26" stroke-linecap="round" opacity=".92"/><path d="M512,438 c-34,-30 34,-52 0,-82 c-34,-30 34,-52 0,-82" fill="none" stroke="#fff" stroke-width="26" stroke-linecap="round" opacity=".92"/><path d="M592,452 c-34,-30 34,-52 0,-82 c-34,-30 34,-52 0,-82" fill="none" stroke="#fff" stroke-width="26" stroke-linecap="round" opacity=".92"/>
+    <path d="M318,504 H706 A194,176 0 0 1 318,504 Z" fill="#fff"/>
+    <rect x="300" y="486" width="424" height="36" rx="18" fill="#fff"/>
+    <rect x="448" y="664" width="128" height="34" rx="14" fill="#fff"/>
+    <path d="M368,566 Q512,600 656,566" fill="none" stroke="#0f6b4f" stroke-opacity=".28" stroke-width="16" stroke-linecap="round"/></g>
+  <text x="64" y="176" font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="66" font-weight="800" fill="#ffffff">Calo Món Việt</text>
+  <text x="66" y="236" font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="30" font-weight="500" fill="#d6f5e8">Chụp món ăn, biết ngay bao nhiêu calo</text>
+  <text x="66" y="280" font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="24" fill="#b7e6d2">Phở, cơm tấm, bún chả… và hơn 70 món Việt</text>
+  <g transform="translate(64 352)">
+  <rect width="176" height="46" rx="23" fill="#ffffff" fill-opacity=".14" stroke="#ffffff" stroke-opacity=".28"/>
+  <text x="88" y="30" text-anchor="middle" font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="600" fill="#ffffff">Nhận diện ảnh</text></g><g transform="translate(254 352)">
+  <rect width="186" height="46" rx="23" fill="#ffffff" fill-opacity=".14" stroke="#ffffff" stroke-opacity=".28"/>
+  <text x="93" y="30" text-anchor="middle" font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="600" fill="#ffffff">Nhắc uống nước</text></g><g transform="translate(454 352)">
+  <rect width="150" height="46" rx="23" fill="#ffffff" fill-opacity=".14" stroke="#ffffff" stroke-opacity=".28"/>
+  <text x="75" y="30" text-anchor="middle" font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="600" fill="#ffffff">Báo cáo PDF</text></g>
+</svg>

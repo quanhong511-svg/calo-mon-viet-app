@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chính sách quyền riêng tư · Calo Món Việt</title>
+<style>
+  :root { --fg:#16231d; --muted:#5d6d65; --accent:#0f6b4f; --line:#d9e2dd; --bg:#f3f6f4; --card:#fff; }
+  @media (prefers-color-scheme: dark) { :root { --fg:#e4ede8; --muted:#97a89f; --accent:#4cc394; --line:#2a3832; --bg:#0f1613; --card:#17211c; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 32px 20px 64px; }
+  header { display:flex; gap:14px; align-items:center; margin-bottom:8px; }
+  header img { width:56px; height:56px; border-radius:14px; }
+  h1 { font-size:1.6rem; margin:0; line-height:1.25; }
+  h2 { font-size:1.15rem; margin:2rem 0 .5rem; color:var(--accent); }
+  .meta { color:var(--muted); font-size:.92rem; margin:0 0 1.5rem; }
+  nav { display:flex; gap:10px; margin-bottom:24px; }
+  nav a { color:var(--accent); font-weight:600; text-decoration:none; border:1px solid var(--line); border-radius:999px; padding:4px 14px; background:var(--card); }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; font-size:.95rem; }
+  th, td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; }
+  tr:last-child td { border-bottom:0; }
+  ul { padding-left:1.2rem; }
+  hr { border:0; border-top:1px solid var(--line); margin:48px 0; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <img src="icon.png" alt="">
+  <h1>Chính sách quyền riêng tư<br><span style="font-weight:500">Calo Món Việt</span></h1>
+</header>
+<nav><a href="#vi">Tiếng Việt</a><a href="#en">English</a></nav>
+
+<section id="vi" lang="vi">
+<p class="meta">Có hiệu lực từ ngày 25/11/2026 · Nhà phát triển: Tran Hong Quan</p>
+
+<p>Calo Món Việt là ứng dụng ghi lại bữa ăn và ước tính lượng calo của món ăn Việt Nam. Ứng dụng <b>không có tài khoản người dùng, không chạy quảng cáo, không dùng công cụ phân tích hay theo dõi</b>, và nhà phát triển không có máy chủ nào nhận dữ liệu của bạn.</p>
+
+<h2>1. Dữ liệu lưu trên máy của bạn</h2>
+<p>Các dữ liệu sau chỉ được lưu trong bộ nhớ của ứng dụng trên điện thoại, không gửi đi đâu:</p>
+<ul>
+  <li>Các bữa ăn đã ghi: tên món, khẩu phần, calo, chất đạm, tinh bột, chất béo, giờ ăn, ảnh thu nhỏ của món.</li>
+  <li>Lượng nước đã uống và cài đặt nhắc uống nước.</li>
+  <li>Mục tiêu calo, ngôn ngữ và cài đặt khác.</li>
+  <li>Khoá API của dịch vụ nhận diện ảnh (nếu bạn tự nhập).</li>
+</ul>
+<p>Gỡ ứng dụng sẽ xoá toàn bộ dữ liệu này. Bạn có thể tự xuất bản sao lưu (tệp JSON, CSV hoặc văn bản) và chọn nơi lưu hoặc chia sẻ tệp đó.</p>
+
+<h2>2. Ảnh và nhận diện món ăn</h2>
+<p>Ứng dụng xin quyền <b>máy ảnh</b> và <b>thư viện ảnh</b> chỉ để bạn chụp hoặc chọn ảnh món ăn. Cách ảnh được xử lý tuỳ vào chế độ nhận diện bạn chọn trong Cài đặt:</p>
+<table>
+  <tr><th>Chế độ</th><th>Dữ liệu được gửi đi</th></tr>
+  <tr><td>Không dùng AI / Nhận diện offline</td><td>Không gửi gì. Ảnh được xử lý ngay trên điện thoại.</td></tr>
+  <tr><td>Google Gemini</td><td>Ảnh món ăn (đã thu nhỏ) hoặc đoạn mô tả bạn nhập được gửi tới Google để nhận diện, bằng khoá API của chính bạn. Xem <a href="https://policies.google.com/privacy">Chính sách quyền riêng tư của Google</a> và <a href="https://ai.google.dev/gemini-api/terms">Điều khoản Gemini API</a>.</td></tr>
+  <tr><td>OpenRouter / Groq</td><td>Tương tự: ảnh hoặc mô tả được gửi tới dịch vụ bạn chọn, bằng khoá API của bạn, theo chính sách của dịch vụ đó.</td></tr>
+  <tr><td>Ollama</td><td>Ảnh được gửi tới máy chủ Ollama do bạn tự chạy trong mạng của mình.</td></tr>
+  <tr><td>Chia sẻ sang ChatGPT</td><td>Ứng dụng chỉ mở bảng chia sẻ của hệ thống; bạn tự quyết định gửi ảnh sang ứng dụng khác.</td></tr>
+</table>
+<p>Ảnh chỉ được gửi khi bạn chủ động bấm nhận diện. Ứng dụng không gửi kèm tên, vị trí, danh bạ hay mã thiết bị.</p>
+
+<h2>3. Thông báo</h2>
+<p>Nếu bạn bật nhắc uống nước, ứng dụng xin quyền gửi thông báo. Các lời nhắc được hẹn giờ ngay trên điện thoại, không qua máy chủ nào.</p>
+
+<h2>4. Chia sẻ dữ liệu</h2>
+<p>Nhà phát triển không thu thập, bán hay chia sẻ dữ liệu của bạn với bên thứ ba. Dữ liệu chỉ rời khỏi máy trong các trường hợp bạn chủ động chọn ở mục 2, hoặc khi bạn tự chia sẻ tệp sao lưu / báo cáo PDF.</p>
+
+<h2>5. Trẻ em</h2>
+<p>Ứng dụng không hướng tới trẻ em dưới 13 tuổi và không cố ý thu thập dữ liệu của trẻ em.</p>
+
+<h2>6. Lưu ý về sức khoẻ</h2>
+<p>Số liệu calo và dinh dưỡng chỉ là ước tính để tham khảo, không thay thế tư vấn của bác sĩ hay chuyên gia dinh dưỡng.</p>
+
+<h2>7. Thay đổi chính sách</h2>
+<p>Khi chính sách thay đổi, trang này sẽ được cập nhật và ghi ngày hiệu lực mới ở đầu trang.</p>
+
+<h2>8. Liên hệ</h2>
+<p>Mọi câu hỏi về quyền riêng tư, vui lòng gửi email tới: <a href="mailto:{{CONTACT_EMAIL}}">{{CONTACT_EMAIL}}</a></p>
+</section>
+
+<hr>
+
+<section id="en" lang="en">
+<h1 style="font-size:1.4rem">Privacy Policy — Calo Món Việt</h1>
+<p class="meta">Effective 25 November 2026 · Developer: Tran Hong Quan</p>
+
+<p>Calo Món Việt is an app for logging meals and estimating the calories of Vietnamese dishes. The app has <b>no user accounts, no ads, and no analytics or tracking</b>, and the developer runs no server that receives your data.</p>
+
+<h2>1. Data stored on your device</h2>
+<p>The following stays in the app's storage on your phone and is not sent anywhere:</p>
+<ul>
+  <li>Logged meals: dish names, portions, calories, protein, carbs, fat, meal times, and small thumbnails of meal photos.</li>
+  <li>Water intake and water-reminder settings.</li>
+  <li>Calorie goal, language and other settings.</li>
+  <li>The API key for a photo-recognition service, if you enter one.</li>
+</ul>
+<p>Uninstalling the app deletes all of this data. You can export a backup (JSON, CSV or text) and choose where to save or share it.</p>
+
+<h2>2. Photos and food recognition</h2>
+<p>The app asks for <b>camera</b> and <b>photo library</b> access only so you can take or choose a photo of your meal. What happens to the photo depends on the recognition mode you choose in Settings:</p>
+<table>
+  <tr><th>Mode</th><th>What is sent</th></tr>
+  <tr><td>No AI / Offline recognition</td><td>Nothing. The photo is processed on your phone.</td></tr>
+  <tr><td>Google Gemini</td><td>The (downscaled) meal photo or your text description is sent to Google for recognition, using your own API key. See <a href="https://policies.google.com/privacy">Google's Privacy Policy</a> and the <a href="https://ai.google.dev/gemini-api/terms">Gemini API Terms</a>.</td></tr>
+  <tr><td>OpenRouter / Groq</td><td>Likewise, the photo or description is sent to the service you chose, with your API key, under that service's policy.</td></tr>
+  <tr><td>Ollama</td><td>The photo is sent to an Ollama server you run on your own network.</td></tr>
+  <tr><td>Share to ChatGPT</td><td>The app only opens the system share sheet; you decide whether to send the photo to another app.</td></tr>
+</table>
+<p>Photos are sent only when you tap to recognise them. The app does not attach your name, location, contacts or device identifiers.</p>
+
+<h2>3. Notifications</h2>
+<p>If you turn on water reminders, the app asks for permission to show notifications. Reminders are scheduled on the device, without any server.</p>
+
+<h2>4. Data sharing</h2>
+<p>The developer does not collect, sell or share your data with third parties. Data leaves your device only in the cases you choose in section 2, or when you share a backup file or PDF report yourself.</p>
+
+<h2>5. Children</h2>
+<p>The app is not directed at children under 13 and does not knowingly collect children's data.</p>
+
+<h2>6. Health notice</h2>
+<p>Calorie and nutrition figures are estimates for reference only and are not a substitute for advice from a doctor or dietitian.</p>
+
+<h2>7. Changes</h2>
+<p>If this policy changes, this page will be updated with a new effective date.</p>
+
+<h2>8. Contact</h2>
+<p>For privacy questions, email: <a href="mailto:{{CONTACT_EMAIL}}">{{CONTACT_EMAIL}}</a></p>
+</section>
+</main>
+</body>
+</html>
