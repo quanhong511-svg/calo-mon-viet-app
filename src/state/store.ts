@@ -1,6 +1,8 @@
 // Trạng thái toàn app + các thao tác (tương ứng phần JS của bản HTML).
 import * as Clipboard from 'expo-clipboard';
+import { File, Paths } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
+import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useSyncExternalStore } from 'react';
 import { Linking, Platform } from 'react-native';
@@ -9,6 +11,7 @@ import { itemsFromAI, parseJson, photoPrompt, PROV, runAI, SRC, textPrompt, type
 import { findMeal, guessMeal, mk, newData, pad, todayIso, toSaved, uid, addDays, type Data, type EditItem } from '@/lib/core';
 import { STRINGS, type Lang, type Strings } from '@/lib/i18n';
 import { parseText } from '@/lib/parse-text';
+import { trendReportHtml } from '@/lib/report';
 import { getFoodNet, modelUsable, prepPhoto, recognizeLocal, type Photo } from '@/lib/photo';
 import { store } from '@/lib/storage';
 
@@ -281,4 +284,21 @@ export function backupNag() {
   if (days < 7 || d.nagDay === todayIso()) return;
   commit((x) => { x.nagDay = todayIso(); });
   toast(tr().backupNag(days), () => goTab('settings'), 8000);
+}
+
+// ---------- xuất báo cáo xu hướng ra PDF ----------
+export async function exportTrendPdf(): Promise<void> {
+  const t = tr(), html = trendReportHtml(s.data, t, s.lang, s.range, s.viewDate);
+  set({ busy: true });
+  try {
+    if (Platform.OS === 'web') { await Print.printAsync({ html }); return; } // web: hộp thoại in → "Lưu thành PDF"
+    const { uri } = await Print.printToFileAsync({ html, width: 595, height: 842, margins: { left: 40, right: 40, top: 40, bottom: 46 } });
+    const dest = new File(Paths.cache, `calo-mon-viet-xu-huong-${s.range}-ngay-${todayIso()}.pdf`);
+    if (dest.exists) dest.delete();
+    await new File(uri).move(dest);
+    if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(dest.uri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf', dialogTitle: t.reportTitle });
+    else await Print.printAsync({ uri: dest.uri });
+  } catch {
+    toast(tr().pdfFail);
+  } finally { set({ busy: false }); }
 }

@@ -25,7 +25,7 @@ async function shareFile(name: string, content: string, mime: string): Promise<b
   const f = new File(Paths.cache, name);
   if (f.exists) f.delete();
   f.create();
-  f.write(content);
+  await f.write(content);
   await Sharing.shareAsync(f.uri, { mimeType: mime, dialogTitle: name });
   return true;
 }

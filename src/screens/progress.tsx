@@ -3,47 +3,27 @@ import { Pressable, View } from 'react-native';
 import Svg, { G, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
 
 import { fmtDate } from '@/lib/backup';
-import { addDays, dayTotals, sum, targetOn, todayIso } from '@/lib/core';
-import { openDay, setRange, tr, useApp } from '@/state/store';
-import { Card, Row, Seg, T } from '@/ui/kit';
+import { buildTrend, chartScale, topRounded, type Bar } from '@/lib/trend';
+import { exportTrendPdf, openDay, setRange, tr, useApp } from '@/state/store';
+import { Btn, Card, Row, Seg, T } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
-type Bar = { d: string; d2: string; week?: boolean; n: number; k: number; p: number; c: number; f: number; tg: number };
-
-function topRounded(x: number, y: number, w: number, h: number, r: number) {
-  r = Math.min(r, h, w / 2);
-  return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
-}
-
 export default function Progress() {
-  const { data, range, viewDate, lang } = useApp();
+  const { data, range, viewDate, lang, busy } = useApp();
   const t = tr(), c = useColors();
   const [W, setW] = useState(320);
   const [tip, setTip] = useState(-1);
   const r0 = (n: number) => Math.round(n).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN');
   const shortDate = (s: string) => { const [, m, d] = s.split('-'); return lang === 'en' ? `${+m}/${+d}` : `${+d}/${+m}`; };
 
-  const end = todayIso(), daily: Bar[] = [];
-  for (let i = range - 1; i >= 0; i--) { const s = addDays(end, -i); daily.push({ d: s, d2: s, n: 1, tg: targetOn(data, s), ...dayTotals(data, s, viewDate, true) }); }
-  let bars: Bar[] = daily;
-  // 90 ngày: mỗi cột là một tuần = trung bình các ngày có ghi
-  if (range > 30) {
-    bars = [];
-    for (let i = daily.length; i > 0; i -= 7) {
-      const w = daily.slice(Math.max(0, i - 7), i), lg = w.filter((x) => x.k > 0), n = lg.length || 1;
-      bars.unshift({ d: w[0].d, d2: w[w.length - 1].d, week: true, n: lg.length, k: sum(lg, 'k') / n, p: sum(lg, 'p') / n, c: sum(lg, 'c') / n, f: sum(lg, 'f') / n, tg: sum(w, 'tg') / w.length });
-    }
-  }
+  const { bars, logged, avg, over } = buildTrend(data, range, viewDate);
   const N = bars.length, H = 220, isSel = (x: Bar) => viewDate >= x.d && viewDate <= x.d2;
   const ml = 40, mr = 8, mt = 14, mb = 24, pw = W - ml - mr, ph = H - mt - mb;
-  const maxV = Math.max(...bars.map((x) => x.tg * 1.12), ...bars.map((x) => x.k * 1.06), 500);
-  const step = maxV > 3200 ? 1000 : maxV > 1600 ? 500 : 250, top = Math.ceil(maxV / step) * step;
+  const { step, top } = chartScale(bars);
   const y = (v: number) => mt + ph - (v / top) * ph, bw = pw / N, barW = Math.max(5, Math.min(30, bw * 0.62)), every = N <= 7 ? 1 : N <= 14 ? 2 : 5;
   const grid = []; for (let v = 0; v <= top; v += step) grid.push(v);
   let goalPath = ''; bars.forEach((x, i) => { goalPath += `${i ? 'L' : 'M'}${ml + bw * i},${y(x.tg)}H${ml + bw * (i + 1)}`; });
   const tl = bars[N - 1].tg;
-  const logged = daily.filter((x) => x.k > 0);
-  const avg = logged.length ? sum(logged, 'k') / logged.length : 0, over = logged.filter((x) => x.k > x.tg).length;
 
   const tap = (i: number) => { if (tip !== i) { setTip(i); return; } setTip(-1); openDay(bars[i].d2); };
   const tb = tip >= 0 ? bars[tip] : null;
@@ -120,6 +100,7 @@ export default function Progress() {
         ))}
       </View>
       <T small muted>{t.tapHint}</T>
+      <Btn full label={busy ? '…' : t.exportPdf} disabled={busy || !logged.length} onPress={exportTrendPdf} />
     </Card>
   );
 }
