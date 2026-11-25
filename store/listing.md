@@ -55,7 +55,7 @@ Chụp lại màn hình (cần `npx expo start --web --port 8092` đang chạy):
 
 - Danh mục: **Sức khoẻ & Thể hình (Health & Fitness)**
 - Thẻ gợi ý: Đếm calo, Dinh dưỡng, Ăn kiêng
-- Email liên hệ: _(email của bạn)_
+- Email liên hệ: quanhong.511@gmail.com
 - Chính sách quyền riêng tư: _(URL công khai của `docs/privacy/index.html`)_
 
 ## Gợi ý trả lời mục Bảo mật dữ liệu (Data safety)
