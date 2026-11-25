@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "calo-mon-viet-app",
+    "name": "Calo Món Việt",
     "slug": "calo-mon-viet-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,29 +8,42 @@
     "scheme": "calomonvietapp",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.tranhongquan.calomonviet"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#E1F0EA",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.tranhongquan.calomonviet"
     },
     "web": {
-      "output": "server",
+      "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
       "expo-router",
+      "expo-sqlite",
+      "expo-sharing",
+      "expo-asset",
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#0f6b4f",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Calo Món Việt dùng camera để chụp món ăn và tính calo.",
+          "photosPermission": "Calo Món Việt cần chọn ảnh món ăn trong thư viện để tính calo.",
+          "microphonePermission": false
         }
       ]
     ],

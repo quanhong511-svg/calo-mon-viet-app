@@ -41,3 +41,6 @@ example
 # generated native folders
 /ios
 /android
+
+# File rác của macOS trên ổ ExFAT
+._*

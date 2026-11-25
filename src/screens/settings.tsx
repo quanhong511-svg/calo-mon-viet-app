@@ -1,0 +1,152 @@
+import * as Clipboard from 'expo-clipboard';
+import * as DocumentPicker from 'expo-document-picker';
+import { File, Paths } from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import { useEffect, useState } from 'react';
+import { Linking, Platform, Pressable, TextInput, View } from 'react-native';
+
+import { PROV, type ProvId } from '@/lib/ai';
+import { backup, fmtDate, mergeBackup, toCsv, toText, validTarget } from '@/lib/backup';
+import { setTarget, todayIso, pad } from '@/lib/core';
+import { getFoodNet } from '@/lib/photo';
+import { commit, get, set, setLang, setProv, setProvField, tr, useApp } from '@/state/store';
+import { Btn, Card, inputStyle, Note, Row, Seg, T } from '@/ui/kit';
+import { useColors } from '@/ui/theme';
+
+/** Tạo file rồi mở bảng chia sẻ (lưu vào Tệp, Drive, Zalo…). Web: tải file xuống. */
+async function shareFile(name: string, content: string, mime: string): Promise<boolean> {
+  if (Platform.OS === 'web') {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+    a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    return true;
+  }
+  if (!(await Sharing.isAvailableAsync())) return false;
+  const f = new File(Paths.cache, name);
+  if (f.exists) f.delete();
+  f.create();
+  f.write(content);
+  await Sharing.shareAsync(f.uri, { mimeType: mime, dialogTitle: name });
+  return true;
+}
+
+async function readPicked(uri: string): Promise<string> {
+  if (Platform.OS === 'web') return (await fetch(uri)).text();
+  return new File(uri).text();
+}
+
+export default function Settings() {
+  const { data, lang, prov, cfg, netMeta, viewDate } = useApp();
+  const t = tr(), c = useColors();
+  const [tgt, setTgt] = useState(String(data.target));
+  const [scope, setScope] = useState<'day' | 'all'>('day');
+  const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
+  const P = PROV[prov], pc = cfg[prov] || {};
+  useEffect(() => { if (prov === 'device' && !netMeta) getFoodNet().then((n) => set({ netMeta: n })).catch(() => {}); }, [prov, netMeta]);
+
+  const applyTarget = () => {
+    const v = validTarget(tgt);
+    if (v) { if (v !== data.target) commit((d) => setTarget(d, v)); setTgt(String(v)); } else setTgt(String(data.target));
+  };
+  const stamp = () => { const n = new Date(); return `${todayIso()}-${pad(n.getHours())}${pad(n.getMinutes())}`; };
+  const run = async (fn: () => Promise<boolean>, mark?: boolean) => {
+    try {
+      const ok = await fn();
+      setMsg({ text: ok ? t.dlOk : t.dlFail, ok });
+      if (ok && mark) commit((d) => { d.lastBackup = new Date().toISOString(); });
+    } catch { setMsg({ text: t.dlFail, ok: false }); }
+  };
+  const doImport = async () => {
+    const r = await DocumentPicker.getDocumentAsync({ type: ['application/json', 'text/plain', '*/*'], copyToCacheDirectory: true });
+    if (r.canceled || !r.assets?.[0]) return;
+    let j: any;
+    try { j = JSON.parse(await readPicked(r.assets[0].uri)); } catch { setMsg({ text: t.badFile, ok: false }); return; }
+    const wasStarted = get().data.started;
+    let res: [number, number] = [0, 0];
+    try {
+      commit((d) => {
+        res = mergeBackup(d, j);
+        if (!wasStarted && validTarget(j.target)) d.target = validTarget(j.target)!; // không đè mục tiêu người dùng đang dùng
+      });
+    } catch { setMsg({ text: t.badFile, ok: false }); return; }
+    setTgt(String(get().data.target));
+    setMsg({ text: t.imported(res[0], res[1]), ok: true });
+  };
+  const field = (k: 'key' | 'model' | 'url', label: string, def?: string, secret?: boolean) => (
+    <View style={{ gap: 4 }}>
+      <T small>{label}</T>
+      <TextInput style={inputStyle(c)} value={pc[k] ?? def ?? ''} onChangeText={(v) => setProvField(prov, k, v.trim())}
+        secureTextEntry={secret} autoCapitalize="none" autoCorrect={false} placeholderTextColor={c.muted} />
+    </View>
+  );
+
+  return (
+    <View style={{ gap: 14 }}>
+      <Card style={{ gap: 12 }}>
+        <T h={2}>{t.setGoal}</T>
+        <Row between><T style={{ flex: 1 }}>{t.target}</T>
+          <TextInput style={[inputStyle(c), { width: 110 }]} value={tgt} onChangeText={setTgt} onEndEditing={applyTarget} onBlur={applyTarget}
+            keyboardType="number-pad" returnKeyType="done" accessibilityLabel={t.target} />
+        </Row>
+        <Row between><T>{t.language}</T>
+          <Seg items={[{ v: 'vi', label: 'Tiếng Việt' }, { v: 'en', label: 'English' }]} value={lang} onChange={setLang} />
+        </Row>
+        <T small muted>{t.split}</T>
+      </Card>
+
+      <Card style={{ gap: 12 }}>
+        <T h={2}>{t.aiTitle}</T>
+        <T small>{t.aiEngine}</T>
+        <View style={{ borderWidth: 1, borderColor: c.line, borderRadius: 12, overflow: 'hidden' }}>
+          {(Object.keys(PROV) as ProvId[]).map((k, i) => (
+            <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: k === prov }} onPress={() => setProv(k)}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderTopWidth: i ? 1 : 0, borderColor: c.line, backgroundColor: k === prov ? c.accentSoft : 'transparent' }}>
+              <View style={{ width: 18, height: 18, borderRadius: 9, borderWidth: 2, borderColor: k === prov ? c.accent : c.muted, alignItems: 'center', justifyContent: 'center' }}>
+                {k === prov && <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c.accent }} />}
+              </View>
+              <T style={{ flex: 1 }}>{t[PROV[k].label] as string}</T>
+            </Pressable>
+          ))}
+        </View>
+        <View style={{ gap: 10, padding: 12, borderWidth: 1, borderColor: c.line, borderRadius: 12, backgroundColor: c.bg }}>
+          <T small muted>{t[P.desc] as string}</T>
+          {prov === 'device' && netMeta?.acc && <T small muted>{t.p_device_acc(Math.round(netMeta.acc.top1 * 100), Math.round(netMeta.acc.top5 * 100))}</T>}
+          {prov === 'device' && netMeta?.acc && netMeta.acc.top1 < 0.3 && <Note>{t.p_device_weak}</Note>}
+          {P.direct && (
+            <>
+              {P.key && field('key', t.key, '', true)}
+              {P.local && field('url', t.url, P.url)}
+              {field('model', t.model, P.model)}
+              <Row>
+                <Pressable onPress={() => Linking.openURL(P.link!)}><T small style={{ color: c.accent }}>{P.local ? 'ollama.com ↗' : t.getKey}</T></Pressable>
+                {P.key && <T small muted>{t.keyNote}</T>}
+              </Row>
+            </>
+          )}
+        </View>
+      </Card>
+
+      <Card style={{ gap: 12 }}>
+        <T h={2}>{t.saveTitle}</T>
+        <T small muted>{t.exportNote}</T>
+        <Row>
+          <Btn kind="pri" label={t.backupBtn} onPress={() => run(() => shareFile(`calo-mon-viet-${stamp()}.json`, JSON.stringify(backup(data, lang), null, 1), 'application/json'), true)} />
+          <Btn label=".csv" onPress={() => run(() => shareFile(`calo-mon-viet-${todayIso()}.csv`, toCsv(data, t, lang), 'text/csv'))} />
+          <Btn label=".txt" onPress={() => run(() => shareFile(`calo-mon-viet-${todayIso()}.txt`, toText(data, t, lang, 'all', viewDate), 'text/plain'))} />
+          <Btn label={t.importBtn} onPress={doImport} />
+        </Row>
+        <Row>
+          <Seg small items={[{ v: 'day' as const, label: t.scopeDay }, { v: 'all' as const, label: t.scopeAll }]} value={scope} onChange={setScope} />
+          <Btn small label={t.copy} onPress={async () => { await Clipboard.setStringAsync(toText(data, t, lang, scope, viewDate)); setMsg({ text: t.copied, ok: true }); }} />
+        </Row>
+        <T small muted>{t.storeInfo(Object.keys(data.days).length) + ' ' + (data.lastBackup ? t.lastBackup(fmtDate(lang, data.lastBackup.slice(0, 10))) : t.noBackupYet)}</T>
+        {msg && <Note ok={msg.ok}>{msg.text}</Note>}
+      </Card>
+
+      <View style={{ gap: 6 }}>
+        <T small muted>© 2026 Tran Hong Quan · Calo Món Việt</T>
+        <T small muted>{t.footer}</T>
+      </View>
+    </View>
+  );
+}
