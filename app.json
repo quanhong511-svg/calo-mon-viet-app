@@ -8,12 +8,11 @@
     "scheme": "calomonvietapp",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon",
       "bundleIdentifier": "com.tranhongquan.calomonviet"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E1F0EA",
+        "backgroundColor": "#0f6b4f",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -35,7 +34,7 @@
         {
           "backgroundColor": "#0f6b4f",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 200
         }
       ],
       [
