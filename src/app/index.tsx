@@ -6,7 +6,8 @@ import Home, { Header } from '@/screens/home';
 import Progress from '@/screens/progress';
 import Settings from '@/screens/settings';
 import Sheets from '@/sheets/sheets';
-import { backupNag, checkDay, goTab, openSheet, set, tr, useApp, type Tab } from '@/state/store';
+import { setupNotifications } from '@/lib/water';
+import { backupNag, checkDay, goTab, openSheet, rescheduleWater, set, tr, useApp, type Tab } from '@/state/store';
 import { Icon, MAXW } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
@@ -29,7 +30,8 @@ export default function App() {
 
   useEffect(() => {
     const nag = setTimeout(backupNag, 1500);
-    const sub = AppState.addEventListener('change', (st) => { if (st === 'active') checkDay(); });
+    setupNotifications().then(() => rescheduleWater(1000));
+    const sub = AppState.addEventListener('change', (st) => { if (st === 'active') { checkDay(); rescheduleWater(); } });
     const iv = setInterval(checkDay, 60000);
     return () => { clearTimeout(nag); sub.remove(); clearInterval(iv); };
   }, []);

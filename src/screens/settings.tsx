@@ -9,8 +9,9 @@ import { PROV, type ProvId } from '@/lib/ai';
 import { backup, fmtDate, mergeBackup, toCsv, toText, validTarget } from '@/lib/backup';
 import { setTarget, todayIso, pad } from '@/lib/core';
 import { getFoodNet } from '@/lib/photo';
-import { commit, get, set, setLang, setProv, setProvField, tr, useApp } from '@/state/store';
-import { Btn, Card, inputStyle, Note, Row, Seg, T } from '@/ui/kit';
+import { commit, get, set, setLang, setProv, setProvField, setWaterCfg, tr, useApp, waterCfg } from '@/state/store';
+import { remindersSupported, slots } from '@/lib/water';
+import { Btn, Card, Icon, inputStyle, Note, Row, Seg, T } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
 /** Tạo file rồi mở bảng chia sẻ (lưu vào Tệp, Drive, Zalo…). Web: tải file xuống. */
@@ -94,6 +95,8 @@ export default function Settings() {
         <T small muted>{t.split}</T>
       </Card>
 
+      <WaterSettings />
+
       <Card style={{ gap: 12 }}>
         <T h={2}>{t.aiTitle}</T>
         <T small>{t.aiEngine}</T>
@@ -148,5 +151,55 @@ export default function Settings() {
         <T small muted>{t.footer}</T>
       </View>
     </View>
+  );
+}
+
+function Stepper({ value, label, onChange, min, max }: { value: number; label: string; onChange: (v: number) => void; min: number; max: number }) {
+  const c = useColors();
+  const b = { width: 38, height: 36, alignItems: 'center' as const, justifyContent: 'center' as const, backgroundColor: c.bg };
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: c.line, borderRadius: 10, overflow: 'hidden' }}>
+      <Pressable accessibilityLabel={`${label} −`} disabled={value <= min} onPress={() => onChange(value - 1)} style={[b, { opacity: value <= min ? 0.4 : 1 }]}><T>−</T></Pressable>
+      <T style={{ width: 58, textAlign: 'center' }}>{`${value}:00`}</T>
+      <Pressable accessibilityLabel={`${label} +`} disabled={value >= max} onPress={() => onChange(value + 1)} style={[b, { opacity: value >= max ? 0.4 : 1 }]}><T>+</T></Pressable>
+    </View>
+  );
+}
+
+function WaterSettings() {
+  const { lang } = useApp(); // vẽ lại khi cài đặt thay đổi
+  const t = tr(), c = useColors(), w = waterCfg();
+  const [goal, setGoal] = useState(String(w.goal));
+  const applyGoal = () => {
+    const v = Math.round(Number(goal) / 50) * 50;
+    if (v >= 500 && v <= 6000) { if (v !== w.goal) setWaterCfg({ goal: v }); setGoal(String(v)); } else setGoal(String(w.goal));
+  };
+  return (
+    <Card style={{ gap: 12 }}>
+      <Row style={{ gap: 6 }}><Icon name="drop" size={20} color={c.water} /><T h={2}>{t.water}</T></Row>
+      <Row between><T style={{ flex: 1 }}>{t.waterGoal}</T>
+        <TextInput style={[inputStyle(c), { width: 110 }]} value={goal} onChangeText={setGoal} onEndEditing={applyGoal} onBlur={applyGoal}
+          keyboardType="number-pad" returnKeyType="done" accessibilityLabel={t.waterGoal} />
+      </Row>
+      <Row between><T>{t.waterRemind}</T>
+        <Seg items={[{ v: 'off', label: t.waterOff }, { v: 'on', label: t.waterOn }]} value={w.on ? 'on' : 'off'} onChange={(v) => setWaterCfg({ on: v === 'on' })} />
+      </Row>
+      {!remindersSupported && <Note>{t.waterWeb}</Note>}
+      {w.on && (
+        <>
+          <Row between><T>{t.waterEvery}</T>
+            <Seg small items={[60, 90, 120, 180].map((v) => ({ v, label: `${(v / 60).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN')} ${t.hours}` }))} value={w.every} onChange={(v) => setWaterCfg({ every: v })} />
+          </Row>
+          <Row between><T>{t.waterHours}</T>
+            <Row>
+              <Stepper value={w.from} label={t.waterFrom} min={5} max={w.to - 1} onChange={(v) => setWaterCfg({ from: v })} />
+              <T muted>–</T>
+              <Stepper value={w.to} label={t.waterTo} min={w.from + 1} max={23} onChange={(v) => setWaterCfg({ to: v })} />
+            </Row>
+          </Row>
+          <T small muted>{t.waterNote(slots(w).length)}</T>
+        </>
+      )}
+    </Card>
   );
 }

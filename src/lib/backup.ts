@@ -42,7 +42,8 @@ export function toCsv(data: Data, t: Strings, lang: Lang) {
 }
 
 export const backup = (data: Data, lang: Lang) => ({
-  app: 'calo-mon-viet', v: 4, exported: new Date().toISOString(), target: data.target, targets: data.targets || null, lang, days: data.days, deleted: data.deleted || {},
+  app: 'calo-mon-viet', v: 5, exported: new Date().toISOString(), target: data.target, targets: data.targets || null, lang, days: data.days, deleted: data.deleted || {},
+  water: data.water || {},
 });
 
 export const validTarget = (v: unknown) => { const n = Number(v); return n >= 800 && n <= 5000 ? Math.round(n) : null; };
@@ -84,6 +85,11 @@ export function mergeBackup(data: Data, j: any): [number, number] {
   if (j.targets && typeof j.targets === 'object') for (const [k, v] of Object.entries(j.targets)) {
     const tv = validTarget(v);
     if (tv && /^\d{4}-\d{2}-\d{2}$/.test(k) && !(data.targets ||= {})[k]) data.targets[k] = tv;
+  }
+  // nước: mỗi ngày giữ số lớn hơn giữa hai bản
+  if (j.water && typeof j.water === 'object') for (const [d, v] of Object.entries(j.water)) {
+    const ml = Math.round(Number(v));
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d) && ml > 0 && ml < 20000 && ml > ((data.water ||= {})[d] || 0)) data.water[d] = ml;
   }
   if (nm) data.started = true;
   return [touched.size, nm];

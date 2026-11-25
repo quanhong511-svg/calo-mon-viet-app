@@ -2,8 +2,8 @@ import { ActivityIndicator, Image, Pressable, View } from 'react-native';
 
 import { itemName, fmtDate, mealName } from '@/lib/backup';
 import { addDays, cloneItem, dayMeals, dayTotals, guessMeal, mealTot, showExample, streak, targetOn, todayIso } from '@/lib/core';
-import { cancelPhotoAI, openReview, shiftDay, tr, useApp } from '@/state/store';
-import { Card, GeminiBadge, Icon, Ring, Row, T, XBtn } from '@/ui/kit';
+import { addWater, cancelPhotoAI, openReview, shiftDay, tr, useApp, waterCfg } from '@/state/store';
+import { Btn, Card, GeminiBadge, Icon, Ring, Row, T, XBtn } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
 export function Header() {
@@ -65,6 +65,8 @@ export default function Home() {
         ))}
       </View>
 
+      <WaterCard />
+
       <Row between><T h={2}>{t.mealsTitle}</T>{showExample(data, viewDate) && <T small muted style={{ flexShrink: 1 }}>{t.exNote}</T>}</Row>
 
       <View style={{ gap: 10 }}>
@@ -108,5 +110,36 @@ export default function Home() {
         )}
       </View>
     </View>
+  );
+}
+
+function WaterCard() {
+  const { data, viewDate, lang } = useApp();
+  const t = tr(), c = useColors();
+  const r0 = (n: number) => Math.round(n).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN');
+  const ml = data.water?.[viewDate] || 0, goal = waterCfg().goal, cups = 8, per = goal / cups;
+  const done = ml >= goal;
+  return (
+    <Card style={{ gap: 10 }}>
+      <Row between>
+        <Row style={{ gap: 6 }}><Icon name="drop" size={20} color={c.water} /><T h={3}>{t.water}</T></Row>
+        <T small style={{ color: done ? c.accent : c.muted }}>{done ? t.waterDone : `${r0(ml)} / ${r0(goal)} ml · ${t.waterLeft(r0(goal - ml))}`}</T>
+      </Row>
+      <View style={{ flexDirection: 'row', gap: 4 }} accessibilityLabel={`${r0(ml)} / ${r0(goal)} ml`}>
+        {Array.from({ length: cups }, (_, i) => {
+          const fill = Math.min(1, Math.max(0, (ml - i * per) / per));
+          return (
+            <View key={i} style={{ flex: 1, height: 26, borderRadius: 6, backgroundColor: c.waterSoft, overflow: 'hidden', justifyContent: 'flex-end' }}>
+              <View style={{ height: `${fill * 100}%`, backgroundColor: c.water }} />
+            </View>
+          );
+        })}
+      </View>
+      <Row style={{ flexWrap: 'nowrap' }}>
+        <Btn small label="+250 ml" onPress={() => addWater(250)} style={{ flex: 1 }} />
+        <Btn small label="+500 ml" onPress={() => addWater(500)} style={{ flex: 1 }} />
+        <Btn small label="−" onPress={() => addWater(-250)} disabled={!ml} style={{ width: 52 }} />
+      </Row>
+    </Card>
   );
 }

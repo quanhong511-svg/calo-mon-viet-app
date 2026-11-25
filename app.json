@@ -44,6 +44,13 @@
           "photosPermission": "Calo Món Việt cần chọn ảnh món ăn trong thư viện để tính calo.",
           "microphonePermission": false
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/android-icon-monochrome.png",
+          "color": "#0f6b4f"
+        }
       ]
     ],
     "experiments": {

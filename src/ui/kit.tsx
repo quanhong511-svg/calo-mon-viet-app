@@ -134,7 +134,7 @@ export function Ring({ size, r, width, frac, color, track }: { size: number; r: 
 }
 
 // ---- biểu tượng (vẽ lại từ SVG trong bản HTML) ----
-type IconName = 'home' | 'chart' | 'gear' | 'plus' | 'camera' | 'image' | 'text' | 'search' | 'bowl' | 'flame' | 'sparkle';
+type IconName = 'home' | 'chart' | 'gear' | 'plus' | 'camera' | 'image' | 'text' | 'search' | 'bowl' | 'flame' | 'sparkle' | 'drop';
 export function Icon({ name, size = 22, color, strokeWidth = 2 }: { name: IconName; size?: number; color: string; strokeWidth?: number }) {
   const sp = { fill: 'none', stroke: color, strokeWidth, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
   return (
@@ -148,6 +148,7 @@ export function Icon({ name, size = 22, color, strokeWidth = 2 }: { name: IconNa
       {name === 'text' && <Path {...sp} d="M4 6h16M4 12h10M4 18h7" />}
       {name === 'search' && (<><Circle {...sp} cx={11} cy={11} r={7} /><Path {...sp} d="M20 20l-3.5-3.5" /></>)}
       {name === 'bowl' && (<><Path {...sp} d="M3 11h18a9 9 0 0 1-18 0z" /><Path {...sp} d="M8 7c0-1.5 1-2 1-3M12 7c0-1.5 1-2 1-3M16 7c0-1.5 1-2 1-3" /></>)}
+      {name === 'drop' && <Path fill={color} d="M12 2.5c-3.6 4.6-6.5 8.3-6.5 11.7A6.5 6.5 0 0 0 12 20.7a6.5 6.5 0 0 0 6.5-6.5c0-3.4-2.9-7.1-6.5-11.7z" />}
       {name === 'sparkle' && <Path fill={color} d="M12 2c.6 4.8 2.9 8.1 7.4 9.4.6.2.6 1 0 1.2C14.9 13.9 12.6 17.2 12 22c-.6-4.8-2.9-8.1-7.4-9.4-.6-.2-.6-1 0-1.2C9.1 10.1 11.4 6.8 12 2z" />}
       {name === 'flame' && <Path fill={color} d="M12 2c1 3.5-1.5 5-1.5 7.5 0 1.4 1 2.5 2.3 2.5 1.6 0 2.4-1.4 2.2-3.2C17.4 10.5 19 13 19 15.5 19 19.1 15.9 22 12 22s-7-2.9-7-6.5C5 10.8 9.6 8.2 12 2z" />}
     </Svg>

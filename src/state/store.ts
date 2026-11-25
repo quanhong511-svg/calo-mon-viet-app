@@ -14,6 +14,7 @@ import { parseText } from '@/lib/parse-text';
 import { trendReportHtml } from '@/lib/report';
 import { getFoodNet, modelUsable, prepPhoto, recognizeLocal, type Photo } from '@/lib/photo';
 import { store } from '@/lib/storage';
+import { ensurePermission, remindersSupported, scheduleWater, WATER_DEFAULT, type WaterCfg } from '@/lib/water';
 
 export type SheetName = 'add' | 'text' | 'list' | 'ai' | 'review';
 export type Alt = { id: string; p: number };
@@ -64,7 +65,7 @@ export function toast(msg: string, onTap?: () => void, ms = 3200) {
   set({ toast: { msg, onTap, id: Date.now() } });
   toastTimer = setTimeout(() => set({ toast: null }), ms);
 }
-export function setLang(l: Lang) { store.set('lang', l); set({ lang: l }); }
+export function setLang(l: Lang) { store.set('lang', l); set({ lang: l }); rescheduleWater(); }
 export function setRange(r: number) { store.set('range', r); set({ range: r }); }
 export function saveCfg(cfg: AiCfg) { store.set('ai-cfg', cfg); set({ cfg, prov: cfg.prov && PROV[cfg.prov] ? cfg.prov : s.prov }); }
 export function setProv(p: ProvId) { saveCfg({ ...s.cfg, prov: p }); set({ prov: p }); }
@@ -272,6 +273,7 @@ export function checkDay() {
   if (td === lastToday) return;
   if (s.viewDate === lastToday) set({ viewDate: td });
   lastToday = td;
+  rescheduleWater();
   backupNag();
 }
 export function backupNag() {
@@ -301,4 +303,29 @@ export async function exportTrendPdf(): Promise<void> {
   } catch {
     toast(tr().pdfFail);
   } finally { set({ busy: false }); }
+}
+
+// ---------- nước ----------
+export const waterCfg = (): WaterCfg => ({ ...WATER_DEFAULT, ...(s.data.waterCfg || {}) });
+export const waterOn = (d: string) => s.data.water?.[d] || 0;
+
+let waterTimer: ReturnType<typeof setTimeout> | undefined;
+/** Dựng lại lịch nhắc (gộp nhiều lần gọi liên tiếp thành một). */
+export function rescheduleWater(delay = 600) {
+  if (!remindersSupported) return;
+  clearTimeout(waterTimer);
+  waterTimer = setTimeout(() => { scheduleWater(waterCfg(), waterOn(todayIso()), tr(), s.lang).catch(() => {}); }, delay);
+}
+export function addWater(ml: number) {
+  const day = s.viewDate, before = waterOn(day), goal = waterCfg().goal;
+  const next = Math.max(0, Math.min(20000, before + ml));
+  if (next === before) return;
+  commit((d) => { (d.water ||= {})[day] = next; if (!next) delete d.water[day]; });
+  if (ml > 0 && before < goal && next >= goal) toast(tr().waterDone);
+  if (day === todayIso()) rescheduleWater();
+}
+export async function setWaterCfg(p: Partial<WaterCfg>) {
+  if (p.on && !(await ensurePermission())) { toast(tr().waterDenied, undefined, 6000); p = { ...p, on: false }; }
+  commit((d) => { d.waterCfg = { ...WATER_DEFAULT, ...(d.waterCfg || {}), ...p }; });
+  rescheduleWater(0);
 }

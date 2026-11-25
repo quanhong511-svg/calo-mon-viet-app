@@ -12,6 +12,9 @@ export type Meal = {
 export type Data = {
   v: number; target: number; targets?: Record<string, number> | null; days: Record<string, Meal[]>; started: boolean;
   deleted?: Record<string, number>; lastBackup?: string; nagDay?: string;
+  /** ml nước đã uống theo ngày */
+  water?: Record<string, number>;
+  waterCfg?: { goal: number; on: boolean; every: number; from: number; to: number };
 };
 export type Totals = { k: number; p: number; c: number; f: number };
 

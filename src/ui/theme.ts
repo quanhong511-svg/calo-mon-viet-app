@@ -6,12 +6,14 @@ const light = {
   accent: '#0f6b4f', accentSoft: '#e1f0ea', onAccent: '#ffffff',
   protein: '#b4432f', carb: '#c48a12', fat: '#3a6ea5',
   warn: '#a3561a', warnSoft: '#fbeee1', shade: 'rgba(10,20,15,0.45)',
+  water: '#2b7bbf', waterSoft: '#e3f0fa',
 };
 const dark: typeof light = {
   bg: '#0f1613', surface: '#17211c', line: '#2a3832', fg: '#e4ede8', muted: '#97a89f',
   accent: '#4cc394', accentSoft: '#1c3a2e', onAccent: '#08140f',
   protein: '#dd6650', carb: '#b98516', fat: '#4f8ad8',
   warn: '#f0a868', warnSoft: '#3a2a1c', shade: 'rgba(0,0,0,0.6)',
+  water: '#5aa9e6', waterSoft: '#16283a',
 };
 export type Colors = typeof light;
 export function useColors(): Colors {
