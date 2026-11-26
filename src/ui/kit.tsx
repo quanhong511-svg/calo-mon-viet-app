@@ -1,8 +1,8 @@
 // Thành phần giao diện dùng chung.
-import type { ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
-  KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, useColorScheme, View,
-  type StyleProp, type TextProps, type TextStyle, type ViewStyle,
+  Dimensions, Keyboard, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, useColorScheme, View,
+  type NativeScrollEvent, type NativeSyntheticEvent, type ScrollViewInstance, type StyleProp, type TextProps, type TextStyle, type ViewStyle,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
@@ -103,21 +103,57 @@ export function XBtn({ onPress, label }: { onPress: () => void; label: string })
 }
 
 /** Bảng trượt từ dưới lên. */
+/** Chiều cao bàn phím đang mở (0 khi đóng). Android bật edge-to-edge nên cửa sổ không tự co lại khi bàn phím hiện. */
+export function useKeyboardHeight() {
+  const [h, setH] = useState(0);
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    const ios = Platform.OS === 'ios';
+    const show = Keyboard.addListener(ios ? 'keyboardWillShow' : 'keyboardDidShow', (e) => setH(e.endCoordinates.height));
+    const hide = Keyboard.addListener(ios ? 'keyboardWillHide' : 'keyboardDidHide', () => setH(0));
+    return () => { show.remove(); hide.remove(); };
+  }, []);
+  return h;
+}
+
+/** Cho ScrollView: khi bàn phím hiện, cuộn để ô đang nhập nằm ngay trên bàn phím. */
+export function useKeyboardScroll(enabled = true) {
+  const kb = useKeyboardHeight();
+  const ref = useRef<ScrollViewInstance>(null);
+  const y = useRef(0);
+  useEffect(() => {
+    if (!kb || !enabled) return;
+    const timer = setTimeout(() => {
+      const input = TextInput.State.currentlyFocusedInput();
+      input?.measureInWindow((_x, top, _w, height) => {
+        const limit = Dimensions.get('window').height - kb - 16;
+        if (top + height > limit) ref.current?.scrollTo({ y: y.current + top + height - limit, animated: true });
+      });
+    }, 80);
+    return () => clearTimeout(timer);
+  }, [kb, enabled]);
+  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => { y.current = e.nativeEvent.contentOffset.y; };
+  return { kb, ref, onScroll };
+}
+
 export function Sheet({ visible, onClose, title, children }: { visible: boolean; onClose: () => void; title: string; children: ReactNode }) {
   const c = useColors();
   const ins = useSafeAreaInsets();
+  const { kb, ref, onScroll } = useKeyboardScroll(visible);
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, justifyContent: 'flex-end' }}>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent navigationBarTranslucent>
+      {/* đẩy cả bảng lên trên bàn phím (thay cho KeyboardAvoidingView, vốn không chạy trong Modal trên Android) */}
+      <View style={{ flex: 1, justifyContent: 'flex-end', paddingTop: ins.top, paddingBottom: kb }}>
         <Pressable style={[StyleSheet.absoluteFill, { backgroundColor: c.shade }]} onPress={onClose} accessibilityLabel="Close" />
         <View style={{ maxHeight: '92%', backgroundColor: c.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20 }}>
-          <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 16, paddingTop: 8, paddingBottom: 18 + ins.bottom, gap: 14, width: '100%', maxWidth: MAXW, alignSelf: 'center' }}>
+          <ScrollView ref={ref} onScroll={onScroll} scrollEventThrottle={32} keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ padding: 16, paddingTop: 8, paddingBottom: kb ? 18 : 18 + ins.bottom, gap: 14, width: '100%', maxWidth: MAXW, alignSelf: 'center' }}>
             <View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: c.line, alignSelf: 'center', marginVertical: 4 }} />
             <Row between><T h={2} style={{ flex: 1 }}>{title}</T><XBtn onPress={onClose} label="Close" /></Row>
             {children}
           </ScrollView>
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 }

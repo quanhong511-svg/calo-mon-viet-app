@@ -3,13 +3,13 @@ import * as DocumentPicker from 'expo-document-picker';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useState } from 'react';
-import { Linking, Platform, Pressable, TextInput, View } from 'react-native';
+import { Keyboard, Linking, Platform, Pressable, TextInput, View } from 'react-native';
 
-import { PROV, type ProvId } from '@/lib/ai';
+import { PROV, type ProvCfg, type ProvId } from '@/lib/ai';
 import { backup, fmtDate, mergeBackup, toCsv, toText, validTarget } from '@/lib/backup';
 import { setTarget, todayIso, pad } from '@/lib/core';
 import { getFoodNet } from '@/lib/photo';
-import { commit, get, set, setLang, setProv, setProvField, setWaterCfg, tr, useApp, waterCfg } from '@/state/store';
+import { commit, get, saveCfg, set, setLang, setProv, setWaterCfg, toast, tr, useApp, waterCfg } from '@/state/store';
 import { remindersSupported, slots } from '@/lib/water';
 import { Btn, Card, Icon, inputStyle, Note, Row, Seg, T } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
@@ -43,6 +43,20 @@ export default function Settings() {
   const [scope, setScope] = useState<'day' | 'all'>('day');
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const P = PROV[prov], pc = cfg[prov] || {};
+  // key/model/url chỉ được lưu khi bấm "Lưu"; đổi bộ nhận diện thì nạp lại bản đang lưu
+  const [draft, setDraft] = useState<ProvCfg>(pc);
+  const [draftProv, setDraftProv] = useState(prov);
+  if (draftProv !== prov) { setDraftProv(prov); setDraft(pc); }
+  const FIELDS = ['key', 'model', 'url'] as const;
+  const dirty = FIELDS.some((k) => draft[k] !== undefined && draft[k] !== (pc[k] ?? ''));
+  const saveAi = () => {
+    const next: ProvCfg = { ...pc };
+    for (const k of FIELDS) if (draft[k] !== undefined) next[k] = draft[k]!.trim();
+    saveCfg({ ...cfg, [prov]: next });
+    setDraft(next);
+    Keyboard.dismiss();
+    toast(t.aiSaved);
+  };
   useEffect(() => { if (prov === 'device' && !netMeta) getFoodNet().then((n) => set({ netMeta: n })).catch(() => {}); }, [prov, netMeta]);
 
   const applyTarget = () => {
@@ -76,8 +90,9 @@ export default function Settings() {
   const field = (k: 'key' | 'model' | 'url', label: string, def?: string, secret?: boolean) => (
     <View style={{ gap: 4 }}>
       <T small>{label}</T>
-      <TextInput style={inputStyle(c)} value={pc[k] ?? def ?? ''} onChangeText={(v) => setProvField(prov, k, v.trim())}
-        secureTextEntry={secret} autoCapitalize="none" autoCorrect={false} placeholderTextColor={c.muted} />
+      <TextInput style={inputStyle(c)} value={draft[k] ?? def ?? ''} onChangeText={(v) => setDraft((d) => ({ ...d, [k]: v }))}
+        secureTextEntry={secret} autoCapitalize="none" autoCorrect={false} placeholderTextColor={c.muted}
+        returnKeyType="done" onSubmitEditing={() => dirty && saveAi()} accessibilityLabel={label} />
     </View>
   );
 
@@ -120,6 +135,7 @@ export default function Settings() {
               {P.key && field('key', t.key, '', true)}
               {P.local && field('url', t.url, P.url)}
               {field('model', t.model, P.model)}
+              <Btn label={dirty ? t.aiSave : t.aiSavedBtn} kind="pri" full disabled={!dirty} onPress={saveAi} />
               <Row>
                 <Pressable onPress={() => Linking.openURL(P.link!)}><T small style={{ color: c.accent }}>{P.local ? 'ollama.com ↗' : t.getKey}</T></Pressable>
                 {P.key && <T small muted>{t.keyNote}</T>}

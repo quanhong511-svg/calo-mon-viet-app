@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { AppState, Pressable, ScrollView, Text, View, type ScrollViewInstance } from 'react-native';
+import { useEffect } from 'react';
+import { AppState, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Home, { Header } from '@/screens/home';
@@ -8,7 +8,7 @@ import Settings from '@/screens/settings';
 import Sheets from '@/sheets/sheets';
 import { setupNotifications } from '@/lib/water';
 import { backupNag, checkDay, goTab, openSheet, rescheduleWater, set, tr, useApp, type Tab } from '@/state/store';
-import { Icon, MAXW } from '@/ui/kit';
+import { Icon, MAXW, useKeyboardScroll } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
 function TabBtn({ id, icon, label, tab }: { id: Tab; icon: 'home' | 'chart' | 'gear'; label: string; tab: Tab }) {
@@ -24,9 +24,10 @@ function TabBtn({ id, icon, label, tab }: { id: Tab; icon: 'home' | 'chart' | 'g
 }
 
 export default function App() {
-  const { tab, toast } = useApp();
+  const { tab, toast, sheet } = useApp();
   const c = useColors(), ins = useSafeAreaInsets(), t = tr();
-  const scroll = useRef<ScrollViewInstance>(null);
+  // bảng trượt tự lo phần bàn phím của nó
+  const { kb, ref: scroll, onScroll } = useKeyboardScroll(!sheet);
 
   useEffect(() => {
     const nag = setTimeout(backupNag, 1500);
@@ -35,12 +36,12 @@ export default function App() {
     const iv = setInterval(checkDay, 60000);
     return () => { clearTimeout(nag); sub.remove(); clearInterval(iv); };
   }, []);
-  useEffect(() => { scroll.current?.scrollTo({ y: 0, animated: false }); }, [tab]);
+  useEffect(() => { scroll.current?.scrollTo({ y: 0, animated: false }); }, [tab, scroll]);
 
 
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
-      <ScrollView ref={scroll} contentContainerStyle={{ paddingTop: ins.top + 12, paddingBottom: 110 + ins.bottom, paddingLeft: Math.max(16, ins.left), paddingRight: Math.max(16, ins.right) }}>
+      <ScrollView ref={scroll} onScroll={onScroll} scrollEventThrottle={32} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingTop: ins.top + 12, paddingBottom: Math.max(110 + ins.bottom, kb + 24), paddingLeft: Math.max(16, ins.left), paddingRight: Math.max(16, ins.right) }}>
         <View style={{ width: '100%', maxWidth: MAXW, alignSelf: 'center', gap: 14 }}>
           <Header />
           {tab === 'home' && <Home />}
