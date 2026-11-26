@@ -36,7 +36,13 @@ for (let k = 13; k >= 0; k--) {
   days[key] = meals;
   water[key] = k === 0 ? 1250 : 1500 + ((k * 370) % 900);
 }
-const data = { v: 1, target: 2000, days, started: true, water, waterCfg: { goal: 2000, on: true, every: 120, from: 8, to: 21 }, lastBackup: iso(now) };
+const coffee = {};
+for (let k = 0; k < 3; k++) { const d = new Date(now); d.setDate(d.getDate() - k); coffee[iso(d)] = k === 0 ? { po: 1, la: 2 } : { es: 2 }; }
+const data = { v: 1, target: 2000, days, started: true, water, coffee, macros: { p: 110, c: 250, f: 62 }, waterCfg: { goal: 2000, on: true, every: 120, from: 8, to: 21 }, lastBackup: iso(now) };
+// bạn bè cho bảng xếp hạng (định dạng mã CMV1 của src/lib/friend.ts)
+const ascii = (x) => x.replace(/[\u007f-\uffff]/g, (ch) => '\\u' + ch.charCodeAt(0).toString(16).padStart(4, '0'));
+const card = (n, sc, kc) => 'CMV1.' + ascii(JSON.stringify([1, n, iso(now), [2, 1, 0].map((k, i) => { const d = new Date(now); d.setDate(d.getDate() - k); return [iso(d), kc[i], 2000, 90, 240, 60, 1800, sc[i], sc[i] > 80 ? 3 : 2]; })]));
+const friends = [card('Lan Anh 🌸', [92, 85, 70], [1950, 1880, 1500]), card('Minh Tuấn', [70, 66, 60], [2400, 2300, 1600]), card('Hà My', [95, 90, 88], [1980, 2020, 1900]), card('Bảo', [40, 55, 30], [900, 1300, 700])];
 
 // --- chụp ---
 const browser = await puppeteer.launch({
@@ -45,15 +51,17 @@ const browser = await puppeteer.launch({
 });
 const page = await browser.newPage();
 await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: 'light' }]);
-await page.setViewport({ width: 360, height: 720, deviceScaleFactor: 3, isMobile: true, hasTouch: true }); // 1080×2160 (tỉ lệ 2:1, đúng giới hạn của Play)
+await page.setViewport({ width: 360, height: 640, deviceScaleFactor: 3, isMobile: true, hasTouch: true }); // 1080×1920 (9:16 – Play chỉ nhận 16:9 hoặc 9:16)
 await page.goto(URL0, { waitUntil: 'networkidle0' });
-await page.evaluate((d) => {
+await page.evaluate((d, f) => {
   localStorage.clear();
   localStorage.setItem('calo-data', JSON.stringify(d));
   localStorage.setItem('lang', JSON.stringify('vi'));
   localStorage.setItem('range', JSON.stringify(14));
   localStorage.setItem('ai-cfg', JSON.stringify({ prov: 'gemini', gemini: { model: 'gemini-3.1-flash-lite' } }));
-}, data);
+  localStorage.setItem('friends', JSON.stringify(f));
+  localStorage.setItem('nick', JSON.stringify('Quân'));
+}, data, friends);
 await page.reload({ waitUntil: 'networkidle0' });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const clickText = async (txt) => {
@@ -68,12 +76,18 @@ const shot = async (name) => { await sleep(500); await page.screenshot({ path: `
 const scrollMain = async (y) => { await page.mouse.move(180, 360); await page.mouse.wheel({ deltaY: y }); await sleep(700); };
 const scrollToText = async (txt) => { await page.evaluate((t) => { const el = [...document.querySelectorAll('div')].reverse().find((e) => e.textContent?.trim() === t); el?.scrollIntoView({ block: 'start' }); }, txt); await sleep(700); };
 
+for (const f of fs.readdirSync(out)) if (f.endsWith('.png')) fs.unlinkSync(`${out}/${f}`);
 await shot('1-hom-nay');
-await scrollMain(520);
-await shot('2-bua-an-va-nuoc');
+await scrollToText('So sánh 3 ngày gần nhất');
+await scrollMain(-40);
+await shot('2-so-sanh-3-ngay');
+await clickText('So sánh với bạn bè');
+await sleep(800);
+await shot('3-xep-hang-ban-be');
+await page.keyboard.press('Escape'); await sleep(800);
+await clickText('Calo Món Việt');
+await shot('4-loi-chuc');
+await page.keyboard.press('Escape'); await sleep(800);
 await clickText('Tiến độ');
-await shot('3-tien-do');
-await clickText('Cài đặt');
-await scrollToText('Nhận diện ảnh tự động');
-await shot('4-cai-dat');
+await shot('5-tien-do');
 await browser.close();

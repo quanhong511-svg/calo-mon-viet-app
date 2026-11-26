@@ -35,8 +35,8 @@ export function Header() {
 }
 
 /** kích thước biểu đồ vòng gộp và [chỉ số, bán kính, độ dày] của từng vòng, từ ngoài vào trong */
-const RING = 150;
-const RINGS = [['k', 68, 12], ['p', 54, 9], ['c', 42, 9], ['f', 30, 9]] as const;
+const RING = 134;
+const RINGS = [['k', 61, 11], ['p', 48, 8], ['c', 37, 8], ['f', 26, 8]] as const;
 
 export default function Home() {
   const { data, viewDate, pending, lang, today: td } = useApp();
@@ -60,7 +60,7 @@ export default function Home() {
       </Row>
 
       <Pressable accessibilityRole="button" accessibilityHint={t.mcTap} onPress={() => openSheet('macros')}>
-        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 16, paddingVertical: 18 }}>
+        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 18 }}>
           {/* vòng ngoài: calo; trong: đạm, tinh bột, chất béo */}
           <View style={{ width: RING, height: RING }}>
             {RINGS.map(([key, r, w], i) => {
@@ -324,7 +324,7 @@ function CoffeeCard() {
               style={({ pressed }) => ({ flex: 1, alignItems: 'center', gap: 4, paddingVertical: 10, paddingHorizontal: 2, borderRadius: 12, borderWidth: 1,
                 borderColor: n ? c.coffee : c.line, backgroundColor: n ? c.coffeeSoft : c.bg, opacity: pressed ? 0.75 : 1 })}>
               <Icon name={COFFEE_ICON[k]} size={28} color={c.coffee} strokeWidth={1.8} />
-              <T numberOfLines={1} style={{ fontSize: 11, fontWeight: '600', color: c.fg }}>{t.coffeeTypes[k]}</T>
+              <T numberOfLines={2} style={{ fontSize: 11, fontWeight: '600', color: c.fg, textAlign: 'center', minHeight: 28 }}>{t.coffeeTypes[k]}</T>
               <T style={{ fontSize: 15, fontWeight: '700', color: n ? c.coffee : c.muted }}>{n}</T>
             </Pressable>
           );

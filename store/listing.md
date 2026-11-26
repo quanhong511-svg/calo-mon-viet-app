@@ -25,20 +25,29 @@ Chụp hoặc chọn ảnh món ăn, ứng dụng nhận diện món và ước 
 ✨ TƯ VẤN DINH DƯỠNG BẰNG AI
 AI xem 3 ngày ăn uống gần nhất và nhận xét: đủ năng lượng chưa, đủ chất chưa, nên thêm món gì. Nội dung chỉ mang tính chất tham khảo, không thay thế tư vấn y tế.
 
-🍜 BẢNG MÓN VIỆT SẴN CÓ
-Không có mạng vẫn ghi được: chọn món trong bảng, chỉnh số gram, ứng dụng tự tính dinh dưỡng.
+🎯 MỤC TIÊU CALO, ĐẠM, TINH BỘT, CHẤT BÉO
+Biểu đồ vòng cho biết hôm nay còn bao nhiêu kcal và từng chất so với mục tiêu bạn tự đặt. Thẻ so sánh 3 ngày chấm điểm và cho biết ngày nào ăn uống tối ưu nhất.
 
-🎯 MỤC TIÊU MỖI NGÀY
-Vòng calo cho biết hôm nay còn bao nhiêu kcal, cùng tỉ lệ đạm – tinh bột – chất béo. Chuỗi ngày ghi liên tục giúp bạn giữ thói quen.
+🍽️ 6 BỮA & NHẮC GIỜ ĂN
+Bữa sáng, trưa, tối và 3 bữa phụ. Hẹn giờ nhắc từng bữa, nhắc tổng kết mỗi tối – bữa nào đã ghi thì không nhắc nữa.
 
-💧 NHẮC UỐNG NƯỚC
-Ghi nước theo cốc 250 ml, đặt mục tiêu mỗi ngày và nhận nhắc nhở theo khung giờ bạn chọn. Uống đủ thì ứng dụng tự ngừng nhắc trong ngày.
+💧 NƯỚC & ☕ CÀ PHÊ
+Ghi nước theo cốc, đặt mục tiêu và nhận nhắc nhở. Ghi cà phê theo ly (Pour Over, Espresso, Latte, Just Coffee), ước tính caffeine, nhắc 4 giờ sau ly gần nhất.
 
-📈 TIẾN ĐỘ & BÁO CÁO PDF
-Biểu đồ calo 7, 14, 30 hoặc 90 ngày, chia theo đạm, tinh bột, chất béo. Xuất báo cáo PDF để lưu trữ hoặc gửi bác sĩ, huấn luyện viên.
+👥 SO SÁNH VỚI BẠN BÈ
+Quét mã QR của nhau để xem bảng xếp hạng ăn uống 3 ngày, TOP 1-2-3, và tạo ảnh chia sẻ lên Instagram, Facebook.
+
+🎨 ẢNH MÓN ĂN CÓ FILTER & HASHTAG
+5 filter, 5 bố cục (cả Story 9:16), tự thêm tên món, calo, dinh dưỡng và hashtag để đăng mạng xã hội.
+
+🏆 LỜI CHÚC THÀNH TÍCH
+Ăn khoẻ, uống đủ nước, giữ phong độ nhiều ngày liền… chạm vào tên ứng dụng để nhận lời chúc.
+
+📈 TIẾN ĐỘ, BÁO CÁO & SAO LƯU
+Biểu đồ calo 7–90 ngày, xuất báo cáo PDF; sao lưu và khôi phục bằng tệp .json hoặc .pdf.
 
 🔒 DỮ LIỆU CỦA BẠN Ở TRÊN MÁY
-Không cần tạo tài khoản, không quảng cáo, không theo dõi. Nhật ký ăn uống chỉ lưu trên điện thoại; bạn có thể sao lưu và khôi phục bằng tệp.
+Không cần tạo tài khoản, không quảng cáo, không theo dõi. Nhật ký ăn uống chỉ lưu trên điện thoại.
 
 Lưu ý: số liệu dinh dưỡng là ước tính để tham khảo, không thay thế tư vấn của bác sĩ hay chuyên gia dinh dưỡng.
 ```
