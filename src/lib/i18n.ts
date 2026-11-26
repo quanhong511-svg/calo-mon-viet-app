@@ -94,6 +94,11 @@ const vi = {
   frMe: 'Bạn', frWin: (n: string) => `🏆 ${n} đang dẫn trước!`, frTie: '🤝 Ngang ngửa nhau!', frPts: (a: number, b: number) => `${a} – ${b} điểm`,
   frSlots: ['2 ngày trước', 'Hôm qua', 'Hôm nay'], frRows: { total: 'Tổng điểm 3 ngày', kcal: 'Calo TB/ngày', pct: '% mục tiêu calo', p: 'Đạm TB/ngày', w: 'Nước TB/ngày', full: 'Ngày đủ 3 bữa' },
   frOld: (n: string, d: string) => `Mã của ${n} được tạo ngày ${d}.`, frAgain: 'Quét mã khác', frLegendT: 'vạch đứt = mục tiêu',
+  frRank: 'Xếp hạng', frRankTitle: 'BẢNG XẾP HẠNG ĂN UỐNG', frRankSub: (a: string, b: string) => `3 ngày · ${a} – ${b}`,
+  frAdded: (n: string) => `Đã thêm ${n} vào bảng xếp hạng`, frRemove: 'Xoá', frDetail: 'Xem so sánh chi tiết', frBack: '‹ Bảng xếp hạng',
+  frMakeImg: '📸 Tạo ảnh chia sẻ', frShareImg: 'Chia sẻ ảnh (Instagram, Facebook…)', frImgFail: 'Không tạo được ảnh.', frImgHint: 'Ảnh 1080×1350 (4:5) vừa khung bài đăng Instagram và Facebook.',
+  frYou: '(bạn)', frPtsShort: 'điểm', frImgFooter: 'Điểm = năng lượng sát mục tiêu (50) + đủ 3 bữa (30) + cân đối dinh dưỡng (20)', frImgApp: 'Calo Món Việt · Đếm calo món Việt',
+  frOnlyMe: 'Quét mã của ít nhất một người bạn để có bảng xếp hạng.',
 };
 
 export type Strings = typeof vi;
@@ -193,6 +198,11 @@ const en: Strings = {
   frMe: 'You', frWin: (n: string) => `🏆 ${n} is ahead!`, frTie: "🤝 It's a tie!", frPts: (a: number, b: number) => `${a} – ${b} pts`,
   frSlots: ['2 days ago', 'Yesterday', 'Today'], frRows: { total: '3-day score', kcal: 'Avg kcal/day', pct: '% of calorie goal', p: 'Avg protein/day', w: 'Avg water/day', full: 'Days with 3 meals' },
   frOld: (n: string, d: string) => `${n}'s code was created on ${d}.`, frAgain: 'Scan another code', frLegendT: 'dashed line = goal',
+  frRank: 'Ranking', frRankTitle: 'EATING LEADERBOARD', frRankSub: (a: string, b: string) => `3 days · ${a} – ${b}`,
+  frAdded: (n: string) => `Added ${n} to the leaderboard`, frRemove: 'Remove', frDetail: 'See detailed comparison', frBack: '‹ Leaderboard',
+  frMakeImg: '📸 Create share image', frShareImg: 'Share image (Instagram, Facebook…)', frImgFail: "Couldn't create the image.", frImgHint: '1080×1350 (4:5) image, fits Instagram and Facebook posts.',
+  frYou: '(you)', frPtsShort: 'pts', frImgFooter: 'Score = energy on target (50) + all 3 meals (30) + balanced nutrients (20)', frImgApp: 'Calo Món Việt · Vietnamese calorie counter',
+  frOnlyMe: "Scan at least one friend's code to get a leaderboard.",
 };
 
 export type Lang = 'vi' | 'en';

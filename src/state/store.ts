@@ -8,7 +8,7 @@ import { useSyncExternalStore } from 'react';
 import { Linking, Platform } from 'react-native';
 
 import { advicePrompt } from '@/lib/advice';
-import { decodeCard, type FriendCard } from '@/lib/friend';
+import { decodeCard, encodeCard, MAX_FRIENDS, type FriendCard } from '@/lib/friend';
 import { ADVICE_PROVS, itemsFromAI, parseJson, photoPrompt, PROV, runAI, SRC, textPrompt, type AiCfg, type AiError, type ProvId } from '@/lib/ai';
 import { findMeal, guessMeal, mk, newData, pad, todayIso, toSaved, uid, addDays, type Data, type EditItem } from '@/lib/core';
 import { STRINGS, type Lang, type Strings } from '@/lib/i18n';
@@ -38,7 +38,7 @@ type State = {
   cmpHidden: boolean;
   advice: Advice;
   /** biệt danh khi chia sẻ so sánh, và thẻ của bạn bè quét gần nhất */
-  nick: string; friend: FriendCard | null;
+  nick: string; friends: FriendCard[];
   /** ngày hôm nay, đổi lúc qua nửa đêm (để màn hình vẽ lại) */
   today: string;
   /** giờ hiện tại (0–23), cập nhật mỗi phút để màn hình vẽ lại khi qua giờ */
@@ -49,13 +49,18 @@ const deviceLang = (): Lang => {
   try { return (Intl.DateTimeFormat().resolvedOptions().locale || 'vi').startsWith('en') ? 'en' : 'vi'; } catch { return 'vi'; }
 };
 const cfg0 = store.get<AiCfg>('ai-cfg') || {};
+/** Danh sách bạn bè đã quét (lưu dạng mã); đọc cả mã đơn lẻ của bản trước. */
+function loadFriends(): FriendCard[] {
+  const codes = store.get<string[]>('friends') || [store.get<string>('friend-last') || ''];
+  return codes.map((x) => decodeCard(x || '')).filter((x): x is FriendCard => !!x);
+}
 let s: State = {
   lang: store.get<Lang>('lang') || deviceLang(),
   data: store.get<Data>('calo-data') || newData(),
   viewDate: todayIso(), tab: 'home', sheet: null, rv: null, listTarget: null, pending: null, photo: null,
   cfg: cfg0, prov: cfg0.prov && PROV[cfg0.prov] ? cfg0.prov : 'none', aiMsg: null, gptOpen: false, local: null,
   toast: null, range: [7, 14, 30, 90].includes(store.get<number>('range') || 0) ? store.get<number>('range')! : 7, netMeta: null, busy: false, cmpHidden: store.get<boolean>('cmp-hidden') === true,
-  nick: store.get<string>('nick') || '', friend: decodeCard(store.get<string>('friend-last') || ''),
+  nick: store.get<string>('nick') || '', friends: loadFriends(),
   advice: { busy: false, err: null, text: null, at: null, prov: null, ...(store.get<Partial<Advice>>('advice-last') || {}) },
   today: todayIso(), hour: new Date().getHours(),
 };
@@ -428,11 +433,13 @@ export function cancelAdvice() { adviceAc?.abort(); }
 
 // ---------- so sánh với bạn bè qua mã QR ----------
 export function setNick(n: string) { store.set('nick', n); set({ nick: n }); }
-/** Nhận mã của bạn bè (từ QR hoặc tin nhắn). Trả về false nếu mã không hợp lệ. */
-export function setFriendCode(text: string): boolean {
+const saveFriends = (list: FriendCard[]) => { store.set('friends', list.map(encodeCard)); set({ friends: list }); };
+const sameNick = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+/** Nhận mã của bạn bè (từ QR hoặc tin nhắn): cùng biệt danh thì thay thẻ cũ. Trả về thẻ, hoặc null nếu mã không hợp lệ. */
+export function setFriendCode(text: string): FriendCard | null {
   const card = decodeCard(text);
-  if (!card) return false;
-  store.set('friend-last', text.slice(text.indexOf('CMV1.')));
-  set({ friend: card });
-  return true;
+  if (!card) return null;
+  saveFriends([...s.friends.filter((f) => !sameNick(f.n, card.n)), card].slice(-MAX_FRIENDS));
+  return card;
 }
+export function removeFriend(n: string) { saveFriends(s.friends.filter((f) => !sameNick(f.n, n))); }

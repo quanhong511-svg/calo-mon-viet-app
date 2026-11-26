@@ -9,6 +9,7 @@ export type FriendCard = { v: 1; n: string; at: string; days: FriendDay[] };
 const PREFIX = 'CMV1.';
 const DAYS = 3;
 export const NICK_MAX = 20;
+export const MAX_FRIENDS = 9;
 
 export function myCard(data: Data, today: string, nick: string): FriendCard {
   const days = [];
@@ -44,6 +45,14 @@ export function decodeCard(text: string): FriendCard | null {
     if (days.some((x) => !x.d)) return null;
     return { v: 1, n: String(a[1] || '?').slice(0, NICK_MAX), at: /^\d{4}-\d{2}-\d{2}$/.test(String(a[2])) ? String(a[2]) : days[DAYS - 1].d, days };
   } catch { return null; }
+}
+
+export type Ranked = { card: FriendCard; stats: ReturnType<typeof cardStats>; me: boolean };
+/** Xếp hạng: tổng điểm 3 ngày cao hơn đứng trước; bằng điểm thì ai có calo gần mục tiêu hơn. */
+export function rankAll(me: FriendCard, friends: FriendCard[]): Ranked[] {
+  return [{ card: me, me: true }, ...friends.map((card) => ({ card, me: false }))]
+    .map((x) => ({ ...x, stats: cardStats(x.card) }))
+    .sort((a, b) => b.stats.total - a.stats.total || Math.abs(a.stats.avgPct - 1) - Math.abs(b.stats.avgPct - 1));
 }
 
 /** Tổng điểm 3 ngày (chỉ tính ngày có ghi) và các chỉ số trung bình. */
