@@ -49,6 +49,10 @@ const vi = {
   mrBestToday: '— tốt nhất trong 3 ngày 🎉', mrBestOther: (day: string, s: number) => `— ${day} tốt hơn (${s} điểm).`,
   mrHead: 'Tổng kết bữa ăn', mrSetting: 'Nhắc tổng kết mỗi tối', mrAt: 'Giờ nhắc', mrNote: 'Mỗi tối một thông báo: bữa chính còn thiếu và điểm hôm nay so với 2 ngày trước. Mở app ít nhất 7 ngày một lần để lịch nhắc tiếp tục.',
   mrEnable: '🔔 Nhắc mỗi tối', mrOnToast: (h: number) => `Sẽ nhắc tổng kết lúc ${h}:00 mỗi tối`,
+  pdfTitle: 'Nhật ký ăn uống', pdfMeal: 'Bữa', pdfDishes: 'Món', pdfDays: 'Số ngày', pdfAvg: 'Trung bình/ngày',
+  pdfFooter: 'File PDF này có kèm dữ liệu sao lưu. Trong app, vào Cài đặt → Sao lưu & chia sẻ → Nhập để khôi phục.',
+  pdfNoData: 'File PDF này không có dữ liệu sao lưu. Chỉ nhập được PDF xuất từ app trên điện thoại.',
+  pdfWebNote: 'Trên bản web, PDF chỉ để đọc/in, không kèm dữ liệu sao lưu.',
 };
 
 export type Strings = typeof vi;
@@ -103,6 +107,10 @@ const en: Strings = {
   mrBestToday: '— best of the 3 days 🎉', mrBestOther: (day: string, s: number) => `— ${day} was better (${s} pts).`,
   mrHead: 'Meal check-in', mrSetting: 'Evening reminder', mrAt: 'Remind at', mrNote: 'One notification each evening: main meals not yet logged and today\'s score vs. the past 2 days. Open the app at least every 7 days to keep it going.',
   mrEnable: '🔔 Remind me nightly', mrOnToast: (h: number) => `Check-in reminder set for ${h}:00 every evening`,
+  pdfTitle: 'Food diary', pdfMeal: 'Meal', pdfDishes: 'Dishes', pdfDays: 'Days', pdfAvg: 'Average/day',
+  pdfFooter: 'This PDF includes a backup of your data. In the app, go to Settings → Back up & share → Import to restore it.',
+  pdfNoData: "This PDF doesn't contain backup data. Only PDFs exported from the phone app can be imported.",
+  pdfWebNote: 'On the web, the PDF is for reading/printing only and does not include backup data.',
 };
 
 export type Lang = 'vi' | 'en';

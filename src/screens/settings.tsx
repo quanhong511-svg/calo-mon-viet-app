@@ -1,6 +1,7 @@
 import * as Clipboard from 'expo-clipboard';
 import * as DocumentPicker from 'expo-document-picker';
 import { File, Paths } from 'expo-file-system';
+import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useRef, useState } from 'react';
 import { Keyboard, Linking, Platform, Pressable, TextInput, View } from 'react-native';
@@ -8,6 +9,7 @@ import { Keyboard, Linking, Platform, Pressable, TextInput, View } from 'react-n
 import { PROV, type ProvCfg, type ProvId } from '@/lib/ai';
 import { backup, fmtDate, mergeBackup, toCsv, toText, validTarget } from '@/lib/backup';
 import { setTarget, todayIso, pad } from '@/lib/core';
+import { embedBackup, extractBackup, isPdf, logPdfHtml } from '@/lib/log-pdf';
 import { getFoodNet } from '@/lib/photo';
 import { commit, get, mealRemindOf, saveCfg, set, setLang, setMealRemind, setProv, setWaterCfg, toast, useApp, useT, waterCfg, waterCfgOf } from '@/state/store';
 import { remindersSupported, slots } from '@/lib/water';
@@ -31,8 +33,29 @@ async function shareFile(name: string, content: string, mime: string): Promise<b
   return true;
 }
 
-async function readPicked(uri: string): Promise<string> {
-  if (Platform.OS === 'web') return (await fetch(uri)).text();
+async function readPicked(uri: string): Promise<Uint8Array> {
+  if (Platform.OS === 'web') return new Uint8Array(await (await fetch(uri)).arrayBuffer());
+  return new File(uri).bytes();
+}
+
+/** Nhật ký ăn uống dạng PDF, kèm bản sao lưu để nhập lại. Web: hộp thoại in (không kèm sao lưu). */
+async function sharePdf(name: string, html: string, embed: (pdf: Uint8Array) => Uint8Array): Promise<boolean> {
+  if (Platform.OS === 'web') { await Print.printAsync({ html }); return true; }
+  if (!(await Sharing.isAvailableAsync())) return false;
+  const { uri } = await Print.printToFileAsync({ html, width: 595, height: 842, margins: { left: 36, right: 36, top: 36, bottom: 40 } });
+  const src = new File(uri), bytes = embed(await src.bytes());
+  const f = new File(Paths.cache, name);
+  if (f.exists) f.delete();
+  f.create();
+  await f.write(bytes);
+  if (src.exists) src.delete();
+  await Sharing.shareAsync(f.uri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf', dialogTitle: name });
+  return true;
+}
+
+/** Đọc tệp .json dạng chữ UTF-8. */
+async function readPickedText(uri: string, b: Uint8Array): Promise<string> {
+  if (Platform.OS === 'web') return new TextDecoder('utf-8').decode(b);
   return new File(uri).text();
 }
 
@@ -71,10 +94,14 @@ export default function Settings() {
     } catch { setMsg({ text: t.dlFail, ok: false }); }
   };
   const doImport = async () => {
-    const r = await DocumentPicker.getDocumentAsync({ type: ['application/json', 'text/plain', '*/*'], copyToCacheDirectory: true });
+    const r = await DocumentPicker.getDocumentAsync({ type: ['application/json', 'application/pdf', 'text/plain', '*/*'], copyToCacheDirectory: true });
     if (r.canceled || !r.assets?.[0]) return;
     let j: any;
-    try { j = JSON.parse(await readPicked(r.assets[0].uri)); } catch { setMsg({ text: t.badFile, ok: false }); return; }
+    try {
+      const uri = r.assets[0].uri, b = await readPicked(uri);
+      if (isPdf(b)) { j = extractBackup(b); if (!j) { setMsg({ text: t.pdfNoData, ok: false }); return; } }
+      else j = JSON.parse((await readPickedText(uri, b)).replace(/^\uFEFF/, ''));
+    } catch { setMsg({ text: t.badFile, ok: false }); return; }
     const wasStarted = get().data.started;
     let res: [number, number] = [0, 0];
     try {
@@ -145,11 +172,12 @@ export default function Settings() {
 
       <Card style={{ gap: 12 }}>
         <T h={2}>{t.saveTitle}</T>
-        <T small muted>{t.exportNote}</T>
+        <T small muted>{t.exportNote + (Platform.OS === 'web' ? ' ' + t.pdfWebNote : '')}</T>
         <Row>
           <Btn kind="pri" label={t.backupBtn} onPress={() => run(() => shareFile(`calo-mon-viet-${stamp()}.json`, JSON.stringify(backup(data, lang), null, 1), 'application/json'), true)} />
           <Btn label=".csv" onPress={() => run(() => shareFile(`calo-mon-viet-${todayIso()}.csv`, toCsv(data, t, lang), 'text/csv'))} />
           <Btn label=".txt" onPress={() => run(() => shareFile(`calo-mon-viet-${todayIso()}.txt`, toText(data, t, lang, 'all', viewDate), 'text/plain'))} />
+          <Btn label=".pdf" onPress={() => run(() => sharePdf(`calo-mon-viet-${stamp()}.pdf`, logPdfHtml(data, t, lang), (b) => embedBackup(b, data, lang)), Platform.OS !== 'web')} />
           <Btn label={t.importBtn} onPress={doImport} />
         </Row>
         <Row>
