@@ -1,13 +1,12 @@
 // Bảng "So sánh với bạn bè": mã QR của tôi, quét / dán mã của bạn, biểu đồ 3 ngày đặt cạnh nhau.
 import * as Clipboard from 'expo-clipboard';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import * as Sharing from 'expo-sharing';
 import { useRef, useState, type ComponentRef } from 'react';
 import { Platform, Pressable, Share, TextInput, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
-import { captureRef } from 'react-native-view-shot';
 
 import { fmtDate } from '@/lib/backup';
+import { captureAndShare } from '@/lib/share-image';
 import { cardStats, encodeCard, myCard, NICK_MAX, rankAll, type FriendCard, type Ranked } from '@/lib/friend';
 import { removeFriend, setFriendCode, setNick, toast, useApp, useT } from '@/state/store';
 import { Btn, inputStyle, Note, Row, Seg, T } from '@/ui/kit';
@@ -191,17 +190,7 @@ function Ranking({ onOpen }: { onOpen: (nick: string) => void }) {
   const list = rankAll(me, friends);
   const shot = useRef<ComponentRef<typeof View>>(null);
   const [img, setImg] = useState(false);
-  const share = async () => {
-    try {
-      if (Platform.OS === 'web') {
-        const uri = await captureRef(shot, { format: 'png', result: 'data-uri', width: 1080, height: 1350 });
-        const a = document.createElement('a'); a.href = uri; a.download = `calo-mon-viet-xep-hang-${today}.png`; document.body.appendChild(a); a.click(); a.remove();
-        return;
-      }
-      const uri = await captureRef(shot, { format: 'png', result: 'tmpfile', width: 1080, height: 1350 });
-      await Sharing.shareAsync(uri, { mimeType: 'image/png', UTI: 'public.png', dialogTitle: t.frShareImg });
-    } catch { toast(t.frImgFail); }
-  };
+  const share = () => captureAndShare(shot, 1080, 1350, `calo-mon-viet-xep-hang-${today}.png`, t.frShareImg).catch(() => toast(t.frImgFail));
   return (
     <>
       <Podium list={list} />

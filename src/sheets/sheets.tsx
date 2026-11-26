@@ -6,6 +6,7 @@ import { itemName } from '@/lib/backup';
 import { adviceDays } from '@/lib/advice';
 import { SRC } from '@/lib/ai';
 import { cheersFor } from '@/lib/cheers';
+import { ArtSheet } from '@/sheets/art';
 import { FriendSheet } from '@/sheets/friend';
 import { macroTargets, MEAL_ORDER, mk, scaleItem, sum, targetOn } from '@/lib/core';
 import { byId, DB } from '@/lib/foods';
@@ -19,7 +20,7 @@ import { useColors } from '@/ui/theme';
 export default function Sheets() {
   const { sheet, rv } = useApp();
   const t = useT();
-  const title = sheet === 'add' ? t.addTitle : sheet === 'text' ? t.optText : sheet === 'list' ? t.optList : sheet === 'ai' ? t.aiHow : sheet === 'macros' ? t.mcTitle : sheet === 'cheers' ? t.chTitle : sheet === 'advice' ? t.adTitle : sheet === 'friend' ? t.frTitle : rv?.mealId ? t.rvEdit : t.rvNew;
+  const title = sheet === 'add' ? t.addTitle : sheet === 'text' ? t.optText : sheet === 'list' ? t.optList : sheet === 'ai' ? t.aiHow : sheet === 'macros' ? t.mcTitle : sheet === 'cheers' ? t.chTitle : sheet === 'advice' ? t.adTitle : sheet === 'friend' ? t.frTitle : sheet === 'art' ? t.arTitle : rv?.mealId ? t.rvEdit : t.rvNew;
   return (
     <Sheet visible={!!sheet} onClose={dismissSheet} title={title}>
       {sheet === 'add' && <AddSheet />}
@@ -31,6 +32,7 @@ export default function Sheets() {
       {sheet === 'cheers' && <CheersSheet />}
       {sheet === 'advice' && <AdviceSheet />}
       {sheet === 'friend' && <FriendSheet />}
+      {sheet === 'art' && <ArtSheet />}
     </Sheet>
   );
 }
@@ -169,6 +171,7 @@ function ReviewSheet() {
     <>
       {rv.photo && <Image source={{ uri: rv.photo }} style={{ width: '100%', height: 200, borderRadius: 14 }} resizeMode="cover" />}
       {rv.source === 'Gemini' && <GeminiBadge label={t.fromGemini} />}
+      {rv.photo && rv.items.length > 0 && <Btn small label={t.arBtn} onPress={() => openSheet('art')} />}
       <Row between>
         <T><T style={{ fontSize: 32, fontWeight: '700' }}>{r0(tot.k)}</T> kcal</T>
         <Row style={{ gap: 14 }}>

@@ -21,7 +21,7 @@ import { scheduleCoffee } from '@/lib/coffee-remind';
 import { MEAL_REMIND_DEFAULT, mealTimesOf, scheduleMealRemind, type MealRemindCfg } from '@/lib/meal-remind';
 import { ensurePermission, remindersSupported, scheduleWater, WATER_DEFAULT, type WaterCfg } from '@/lib/water';
 
-export type SheetName = 'add' | 'text' | 'list' | 'ai' | 'review' | 'macros' | 'cheers' | 'advice' | 'friend';
+export type SheetName = 'add' | 'text' | 'list' | 'ai' | 'review' | 'macros' | 'cheers' | 'advice' | 'friend' | 'art';
 export type Advice = { busy: boolean; text: string | null; err: string | null; at: number | null; prov: string | null };
 export type Alt = { id: string; p: number };
 export type Review = {
@@ -110,6 +110,7 @@ export function closeSheet() { set({ sheet: null }); }
 export function dismissSheet() {
   if (s.sheet === 'ai') { set({ pending: null, gptOpen: false, aiMsg: null }); }
   if (s.sheet === 'list' && s.listTarget === 'review' && s.rv) { set({ sheet: 'review' }); return; }
+  if (s.sheet === 'art' && s.rv) { set({ sheet: 'review' }); return; }
   set({ sheet: null });
 }
 export function openReview(o: Partial<Review> & { items: EditItem[] }) {

@@ -99,6 +99,11 @@ const vi = {
   frMakeImg: '📸 Tạo ảnh chia sẻ', frShareImg: 'Chia sẻ ảnh (Instagram, Facebook…)', frImgFail: 'Không tạo được ảnh.', frImgHint: 'Ảnh 1080×1350 (4:5) vừa khung bài đăng Instagram và Facebook.',
   frYou: '(bạn)', frPtsShort: 'điểm', frImgFooter: 'Điểm = năng lượng sát mục tiêu (50) + đủ 3 bữa (30) + cân đối dinh dưỡng (20)', frImgApp: 'Calo Món Việt · Đếm calo món Việt',
   frOnlyMe: 'Quét mã của ít nhất một người bạn để có bảng xếp hạng.',
+  arBtn: '🎨 Tạo ảnh đăng mạng xã hội', arTitle: 'Ảnh món ăn có filter', arFilter: 'Filter', arLayout: 'Bố cục', arTags: 'Hashtag',
+  arFilters: { none: 'Gốc', warm: 'Ấm áp', cool: 'Mát lạnh', vintage: 'Cổ điển', sunset: 'Hoàng hôn', fade: 'Mờ sương' },
+  arLayouts: { clean: 'Tối giản', polaroid: 'Polaroid', card: 'Thẻ calo', magazine: 'Tạp chí', story: 'Story 9:16' },
+  arPick: 'Chọn ảnh khác', arShare: 'Chia sẻ ảnh', arLowRes: 'Ảnh đã lưu chỉ còn bản nhỏ; chọn lại ảnh gốc để nét hơn.', arStory: 'Hôm nay mình ăn gì? 🍜',
+  arSize: (w: number, h: number) => `Ảnh ${w}×${h}`,
 };
 
 export type Strings = typeof vi;
@@ -203,6 +208,11 @@ const en: Strings = {
   frMakeImg: '📸 Create share image', frShareImg: 'Share image (Instagram, Facebook…)', frImgFail: "Couldn't create the image.", frImgHint: '1080×1350 (4:5) image, fits Instagram and Facebook posts.',
   frYou: '(you)', frPtsShort: 'pts', frImgFooter: 'Score = energy on target (50) + all 3 meals (30) + balanced nutrients (20)', frImgApp: 'Calo Món Việt · Vietnamese calorie counter',
   frOnlyMe: "Scan at least one friend's code to get a leaderboard.",
+  arBtn: '🎨 Create a social media image', arTitle: 'Food photo with filter', arFilter: 'Filter', arLayout: 'Layout', arTags: 'Hashtags',
+  arFilters: { none: 'Original', warm: 'Warm', cool: 'Cool', vintage: 'Vintage', sunset: 'Sunset', fade: 'Faded' },
+  arLayouts: { clean: 'Minimal', polaroid: 'Polaroid', card: 'Calorie card', magazine: 'Magazine', story: 'Story 9:16' },
+  arPick: 'Pick another photo', arShare: 'Share image', arLowRes: 'Saved meals keep only a small photo; pick the original for a sharper image.', arStory: 'What I ate today 🍜',
+  arSize: (w: number, h: number) => `${w}×${h} image`,
 };
 
 export type Lang = 'vi' | 'en';
