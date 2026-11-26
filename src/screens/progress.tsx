@@ -4,13 +4,13 @@ import Svg, { G, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
 
 import { fmtDate } from '@/lib/backup';
 import { buildTrend, chartScale, topRounded, type Bar } from '@/lib/trend';
-import { exportTrendPdf, openDay, setRange, tr, useApp } from '@/state/store';
+import { exportTrendPdf, openDay, setRange, useApp, useT } from '@/state/store';
 import { Btn, Card, Row, Seg, T } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
 export default function Progress() {
   const { data, range, viewDate, lang, busy } = useApp();
-  const t = tr(), c = useColors();
+  const t = useT(), c = useColors();
   const [W, setW] = useState(320);
   const [tip, setTip] = useState(-1);
   const r0 = (n: number) => Math.round(n).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN');

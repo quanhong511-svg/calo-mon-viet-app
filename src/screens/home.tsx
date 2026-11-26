@@ -1,14 +1,14 @@
 import { ActivityIndicator, Image, Pressable, View } from 'react-native';
 
 import { itemName, fmtDate, mealName } from '@/lib/backup';
-import { addDays, cloneItem, dayMeals, dayTotals, guessMeal, mealTot, showExample, streak, targetOn, todayIso } from '@/lib/core';
-import { addWater, cancelPhotoAI, openReview, shiftDay, tr, useApp, waterCfg } from '@/state/store';
+import { addDays, cloneItem, dayMeals, dayTotals, guessMeal, mealTot, showExample, streak, targetOn } from '@/lib/core';
+import { addWater, cancelPhotoAI, openReview, shiftDay, useApp, useT, waterCfgOf } from '@/state/store';
 import { Btn, Card, GeminiBadge, Icon, Ring, Row, T, XBtn } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
 export function Header() {
   const { data } = useApp();
-  const t = tr(), c = useColors(), n = streak(data);
+  const t = useT(), c = useColors(), n = streak(data);
   return (
     <Row between>
       <View>
@@ -24,11 +24,10 @@ export function Header() {
 }
 
 export default function Home() {
-  const { data, viewDate, pending, lang } = useApp();
-  const t = tr(), c = useColors();
+  const { data, viewDate, pending, lang, today: td } = useApp();
+  const t = useT(), c = useColors();
   const r0 = (n: number) => Math.round(n).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN');
   const tgt = targetOn(data, viewDate), tt = dayTotals(data, viewDate, viewDate), left = tgt - tt.k;
-  const td = todayIso();
   const dateLbl = viewDate === td ? t.today : viewDate === addDays(td, -1) ? t.yesterday : fmtDate(lang, viewDate);
   const meals = dayMeals(data, viewDate, viewDate);
   const M: [keyof typeof tt, number, string, string][] = [
@@ -115,9 +114,9 @@ export default function Home() {
 
 function WaterCard() {
   const { data, viewDate, lang } = useApp();
-  const t = tr(), c = useColors();
+  const t = useT(), c = useColors();
   const r0 = (n: number) => Math.round(n).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN');
-  const ml = data.water?.[viewDate] || 0, goal = waterCfg().goal, cups = 8, per = goal / cups;
+  const ml = data.water?.[viewDate] || 0, goal = waterCfgOf(data).goal, cups = 8, per = goal / cups;
   const done = ml >= goal;
   return (
     <Card style={{ gap: 10 }}>

@@ -7,15 +7,14 @@ import { mk, scaleItem, sum } from '@/lib/core';
 import { byId, DB } from '@/lib/foods';
 import { norm } from '@/lib/parse-text';
 import {
-  addFromList, aiManual, deleteReview, describe, dismissSheet, finishLocal, gemQuick, openList, openSheet, pasteFromClipboard,
-  pickPhoto, readPasted, recopyPrompt, saveReview, set, startGpt, tr, updateReview, useApp,
+  addFromList, aiManual, deleteReview, describe, dismissSheet, finishLocal, gemQuick, openList, openSheet, pasteFromClipboard, pickPhoto, readPasted, recopyPrompt, saveReview, set, startGpt, updateReview, useApp, useT,
 } from '@/state/store';
 import { Btn, Chips, GeminiBadge, Icon, inputStyle, Note, Row, Seg, Sheet, T, XBtn } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
 export default function Sheets() {
   const { sheet, rv } = useApp();
-  const t = tr();
+  const t = useT();
   const title = sheet === 'add' ? t.addTitle : sheet === 'text' ? t.optText : sheet === 'list' ? t.optList : sheet === 'ai' ? t.aiHow : rv?.mealId ? t.rvEdit : t.rvNew;
   return (
     <Sheet visible={!!sheet} onClose={dismissSheet} title={title}>
@@ -42,7 +41,7 @@ function Opt({ icon, title, desc, onPress }: { icon: 'camera' | 'image' | 'text'
 }
 
 function AddSheet() {
-  const t = tr();
+  const t = useT();
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
       <Opt icon="camera" title={t.optCam} desc={t.optCamD} onPress={() => pickPhoto('camera')} />
@@ -55,7 +54,7 @@ function AddSheet() {
 
 function TextSheet() {
   const { busy } = useApp();
-  const t = tr(), c = useColors();
+  const t = useT(), c = useColors();
   const [txt, setTxt] = useState('');
   return (
     <>
@@ -69,7 +68,7 @@ function TextSheet() {
 
 function ListSheet() {
   const { lang } = useApp();
-  const t = tr(), c = useColors();
+  const t = useT(), c = useColors();
   const [q, setQ] = useState('');
   const [cat, setCat] = useState<'all' | 'main' | 'snack'>('all');
   const nq = norm(q);
@@ -95,7 +94,7 @@ function ListSheet() {
 
 function AiSheet() {
   const { photo, local, gptOpen, aiMsg, lang } = useApp();
-  const t = tr(), c = useColors();
+  const t = useT(), c = useColors();
   const [key, setKey] = useState('');
   const [paste, setPaste] = useState('');
   const box = { gap: 10, padding: 12, borderWidth: 1, borderColor: c.line, borderRadius: 12, backgroundColor: c.bg } as const;
@@ -138,7 +137,7 @@ function AiSheet() {
 
 function ReviewSheet() {
   const { rv, lang } = useApp();
-  const t = tr(), c = useColors();
+  const t = useT(), c = useColors();
   const [ask, setAsk] = useState(false);
   if (!rv) return null;
   const r0 = (n: number) => Math.round(n).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN');
@@ -222,14 +221,15 @@ function ReviewSheet() {
 function GramInput({ value, onDone }: { value: number; onDone: (v: number) => void }) {
   const c = useColors();
   const [txt, setTxt] = useState<string | null>(null);
+  // cập nhật ngay khi gõ: bấm "Lưu bữa" lúc bàn phím còn mở (ô chưa mất focus) vẫn lưu đúng số gram
   return (
     <TextInput
       style={{ width: 64, textAlign: 'center', fontSize: 16, color: c.fg, backgroundColor: c.surface, paddingVertical: 6 }}
-      keyboardType="number-pad" returnKeyType="done" accessibilityLabel="gram"
-      value={txt ?? String(Math.round(value))} onChangeText={setTxt}
-      onEndEditing={() => { if (txt != null) onDone(Number(txt)); setTxt(null); }}
-      onBlur={() => { if (txt != null) onDone(Number(txt)); setTxt(null); }}
+      keyboardType="number-pad" returnKeyType="done" accessibilityLabel="gram" maxLength={4}
+      value={txt ?? String(Math.round(value))}
+      onChangeText={(v) => { const d = v.replace(/\D/g, ''); setTxt(d); if (Number(d) > 0) onDone(Number(d)); }}
+      onEndEditing={() => setTxt(null)}
+      onBlur={() => setTxt(null)}
     />
   );
 }
-

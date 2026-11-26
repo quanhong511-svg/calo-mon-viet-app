@@ -7,7 +7,7 @@ import Progress from '@/screens/progress';
 import Settings from '@/screens/settings';
 import Sheets from '@/sheets/sheets';
 import { setupNotifications } from '@/lib/water';
-import { backupNag, checkDay, goTab, openSheet, rescheduleWater, set, tr, useApp, type Tab } from '@/state/store';
+import { backupNag, checkDay, goTab, openSheet, rescheduleWater, set, type Tab, useApp, useT } from '@/state/store';
 import { Icon, MAXW, useKeyboardScroll } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
@@ -25,7 +25,7 @@ function TabBtn({ id, icon, label, tab }: { id: Tab; icon: 'home' | 'chart' | 'g
 
 export default function App() {
   const { tab, toast, sheet } = useApp();
-  const c = useColors(), ins = useSafeAreaInsets(), t = tr();
+  const c = useColors(), ins = useSafeAreaInsets(), t = useT();
   // bảng trượt tự lo phần bàn phím của nó
   const { kb, ref: scroll, onScroll } = useKeyboardScroll(!sheet);
 

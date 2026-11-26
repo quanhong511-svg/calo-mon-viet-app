@@ -2,14 +2,14 @@ import * as Clipboard from 'expo-clipboard';
 import * as DocumentPicker from 'expo-document-picker';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Keyboard, Linking, Platform, Pressable, TextInput, View } from 'react-native';
 
 import { PROV, type ProvCfg, type ProvId } from '@/lib/ai';
 import { backup, fmtDate, mergeBackup, toCsv, toText, validTarget } from '@/lib/backup';
 import { setTarget, todayIso, pad } from '@/lib/core';
 import { getFoodNet } from '@/lib/photo';
-import { commit, get, saveCfg, set, setLang, setProv, setWaterCfg, toast, tr, useApp, waterCfg } from '@/state/store';
+import { commit, get, saveCfg, set, setLang, setProv, setWaterCfg, toast, useApp, useT, waterCfg, waterCfgOf } from '@/state/store';
 import { remindersSupported, slots } from '@/lib/water';
 import { Btn, Card, Icon, inputStyle, Note, Row, Seg, T } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
@@ -38,8 +38,7 @@ async function readPicked(uri: string): Promise<string> {
 
 export default function Settings() {
   const { data, lang, prov, cfg, netMeta, viewDate } = useApp();
-  const t = tr(), c = useColors();
-  const [tgt, setTgt] = useState(String(data.target));
+  const t = useT(), c = useColors();
   const [scope, setScope] = useState<'day' | 'all'>('day');
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const P = PROV[prov], pc = cfg[prov] || {};
@@ -59,9 +58,9 @@ export default function Settings() {
   };
   useEffect(() => { if (prov === 'device' && !netMeta) getFoodNet().then((n) => set({ netMeta: n })).catch(() => {}); }, [prov, netMeta]);
 
-  const applyTarget = () => {
-    const v = validTarget(tgt);
-    if (v) { if (v !== data.target) commit((d) => setTarget(d, v)); setTgt(String(v)); } else setTgt(String(data.target));
+  const applyTarget = (txt: string) => {
+    const v = validTarget(txt);
+    if (v && v !== get().data.target) commit((d) => setTarget(d, v));
   };
   const stamp = () => { const n = new Date(); return `${todayIso()}-${pad(n.getHours())}${pad(n.getMinutes())}`; };
   const run = async (fn: () => Promise<boolean>, mark?: boolean) => {
@@ -84,7 +83,6 @@ export default function Settings() {
         if (!wasStarted && validTarget(j.target)) d.target = validTarget(j.target)!; // không đè mục tiêu người dùng đang dùng
       });
     } catch { setMsg({ text: t.badFile, ok: false }); return; }
-    setTgt(String(get().data.target));
     setMsg({ text: t.imported(res[0], res[1]), ok: true });
   };
   const field = (k: 'key' | 'model' | 'url', label: string, def?: string, secret?: boolean) => (
@@ -101,8 +99,7 @@ export default function Settings() {
       <Card style={{ gap: 12 }}>
         <T h={2}>{t.setGoal}</T>
         <Row between><T style={{ flex: 1 }}>{t.target}</T>
-          <TextInput style={[inputStyle(c), { width: 110 }]} value={tgt} onChangeText={setTgt} onEndEditing={applyTarget} onBlur={applyTarget}
-            keyboardType="number-pad" returnKeyType="done" accessibilityLabel={t.target} />
+          <NumInput value={data.target} onCommit={applyTarget} label={t.target} />
         </Row>
         <Row between><T>{t.language}</T>
           <Seg items={[{ v: 'vi', label: 'Tiếng Việt' }, { v: 'en', label: 'English' }]} value={lang} onChange={setLang} />
@@ -170,6 +167,22 @@ export default function Settings() {
   );
 }
 
+/** Ô nhập số: áp dụng khi rời ô, bấm Xong, hoặc khi màn hình đóng (chuyển tab lúc bàn phím còn mở). Số không hợp lệ thì hiện lại giá trị cũ. */
+function NumInput({ value, onCommit, label }: { value: number; onCommit: (txt: string) => void; label: string }) {
+  const c = useColors();
+  const [txt, setTxt] = useState<string | null>(null);
+  const pending = useRef<string | null>(null);
+  const commitRef = useRef(onCommit);
+  useEffect(() => { commitRef.current = onCommit; });
+  useEffect(() => () => { if (pending.current != null) commitRef.current(pending.current); }, []);
+  const done = () => { if (pending.current != null) onCommit(pending.current); pending.current = null; setTxt(null); };
+  return (
+    <TextInput style={[inputStyle(c), { width: 110 }]} value={txt ?? String(value)} maxLength={5}
+      onChangeText={(v) => { pending.current = v; setTxt(v); }} onEndEditing={done} onBlur={done}
+      keyboardType="number-pad" returnKeyType="done" accessibilityLabel={label} />
+  );
+}
+
 function Stepper({ value, label, onChange, min, max }: { value: number; label: string; onChange: (v: number) => void; min: number; max: number }) {
   const c = useColors();
   const b = { width: 38, height: 36, alignItems: 'center' as const, justifyContent: 'center' as const, backgroundColor: c.bg };
@@ -183,19 +196,17 @@ function Stepper({ value, label, onChange, min, max }: { value: number; label: s
 }
 
 function WaterSettings() {
-  const { lang } = useApp(); // vẽ lại khi cài đặt thay đổi
-  const t = tr(), c = useColors(), w = waterCfg();
-  const [goal, setGoal] = useState(String(w.goal));
-  const applyGoal = () => {
-    const v = Math.round(Number(goal) / 50) * 50;
-    if (v >= 500 && v <= 6000) { if (v !== w.goal) setWaterCfg({ goal: v }); setGoal(String(v)); } else setGoal(String(w.goal));
+  const { lang, data } = useApp();
+  const t = useT(), c = useColors(), w = waterCfgOf(data);
+  const applyGoal = (txt: string) => {
+    const v = Math.round(Number(txt) / 50) * 50;
+    if (v >= 500 && v <= 6000 && v !== waterCfg().goal) setWaterCfg({ goal: v });
   };
   return (
     <Card style={{ gap: 12 }}>
       <Row style={{ gap: 6 }}><Icon name="drop" size={20} color={c.water} /><T h={2}>{t.water}</T></Row>
       <Row between><T style={{ flex: 1 }}>{t.waterGoal}</T>
-        <TextInput style={[inputStyle(c), { width: 110 }]} value={goal} onChangeText={setGoal} onEndEditing={applyGoal} onBlur={applyGoal}
-          keyboardType="number-pad" returnKeyType="done" accessibilityLabel={t.waterGoal} />
+        <NumInput value={w.goal} onCommit={applyGoal} label={t.waterGoal} />
       </Row>
       <Row between><T>{t.waterRemind}</T>
         <Seg items={[{ v: 'off', label: t.waterOff }, { v: 'on', label: t.waterOn }]} value={w.on ? 'on' : 'off'} onChange={(v) => setWaterCfg({ on: v === 'on' })} />

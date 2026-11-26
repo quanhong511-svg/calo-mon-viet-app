@@ -28,6 +28,8 @@ type State = {
   lang: Lang; data: Data; viewDate: string; tab: Tab; sheet: SheetName | null; rv: Review | null; listTarget: 'review' | null;
   pending: { photo: string } | null; photo: Photo | null; cfg: AiCfg; prov: ProvId; aiMsg: string | null; gptOpen: boolean; local: Alt[] | null;
   toast: { msg: string; onTap?: () => void; id: number } | null; range: number; netMeta: NetMeta; busy: boolean;
+  /** ngày hôm nay, đổi lúc qua nửa đêm (để màn hình vẽ lại) */
+  today: string;
 };
 
 const deviceLang = (): Lang => {
@@ -40,6 +42,7 @@ let s: State = {
   viewDate: todayIso(), tab: 'home', sheet: null, rv: null, listTarget: null, pending: null, photo: null,
   cfg: cfg0, prov: cfg0.prov && PROV[cfg0.prov] ? cfg0.prov : 'none', aiMsg: null, gptOpen: false, local: null,
   toast: null, range: [7, 14, 30, 90].includes(store.get<number>('range') || 0) ? store.get<number>('range')! : 7, netMeta: null, busy: false,
+  today: todayIso(),
 };
 
 const listeners = new Set<() => void>();
@@ -47,7 +50,10 @@ const subscribe = (l: () => void) => { listeners.add(l); return () => listeners.
 export const get = () => s;
 export function set(p: Partial<State>) { s = { ...s, ...p }; listeners.forEach((l) => l()); }
 export const useApp = () => useSyncExternalStore(subscribe, get, get);
+/** Chuỗi theo ngôn ngữ hiện tại — dùng trong hàm xử lý (ngoài render). */
 export const tr = (): Strings => STRINGS[s.lang];
+/** Trong component phải dùng hook này: React Compiler ghi nhớ kết quả tr() nên đổi ngôn ngữ sẽ không vẽ lại. */
+export const useT = (): Strings => STRINGS[useApp().lang];
 
 // ---------- dữ liệu ----------
 /** Sửa dữ liệu trên một bản sao rồi lưu xuống máy. */
@@ -271,7 +277,7 @@ let lastToday = todayIso();
 export function checkDay() {
   const td = todayIso();
   if (td === lastToday) return;
-  if (s.viewDate === lastToday) set({ viewDate: td });
+  set(s.viewDate === lastToday ? { viewDate: td, today: td } : { today: td });
   lastToday = td;
   rescheduleWater();
   backupNag();
@@ -306,7 +312,9 @@ export async function exportTrendPdf(): Promise<void> {
 }
 
 // ---------- nước ----------
-export const waterCfg = (): WaterCfg => ({ ...WATER_DEFAULT, ...(s.data.waterCfg || {}) });
+export const waterCfgOf = (d: Data): WaterCfg => ({ ...WATER_DEFAULT, ...(d.waterCfg || {}) });
+/** Ngoài render. Trong component dùng waterCfgOf(data) để luôn vẽ lại khi cài đặt đổi. */
+export const waterCfg = (): WaterCfg => waterCfgOf(s.data);
 export const waterOn = (d: string) => s.data.water?.[d] || 0;
 
 let waterTimer: ReturnType<typeof setTimeout> | undefined;
