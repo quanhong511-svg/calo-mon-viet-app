@@ -12,7 +12,7 @@ import { macroTargets, MEAL_ORDER, mk, scaleItem, sum, targetOn } from '@/lib/co
 import { byId, DB } from '@/lib/foods';
 import { norm } from '@/lib/parse-text';
 import {
-  addFromList, aiManual, deleteReview, describe, dismissSheet, finishLocal, gemQuick, openList, openSheet, pasteFromClipboard, pickPhoto, readPasted, recopyPrompt, saveReview, set, setMacros, startGpt, toast, waterCfgOf, adviceProv, askAdvice, cancelAdvice, goTab, updateReview, useApp, useT,
+  addFromList, aiManual, deleteReview, describe, dismissSheet, finishLocal, gemQuick, openList, openSheet, pasteFromClipboard, pickPhoto, readPasted, recopyPrompt, saveReview, set, setMacros, startGpt, toast, waterCfgOf, openArtFromLibrary, adviceProv, askAdvice, cancelAdvice, goTab, updateReview, useApp, useT,
 } from '@/state/store';
 import { Btn, Chips, GeminiBadge, Icon, inputStyle, Note, Row, Seg, Sheet, T, XBtn } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
@@ -37,7 +37,7 @@ export default function Sheets() {
   );
 }
 
-function Opt({ icon, title, desc, onPress }: { icon: 'camera' | 'image' | 'text' | 'search'; title: string; desc: string; onPress: () => void }) {
+function Opt({ icon, title, desc, onPress }: { icon: 'camera' | 'image' | 'text' | 'search' | 'sparkle'; title: string; desc: string; onPress: () => void }) {
   const c = useColors();
   return (
     <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => ({
@@ -52,10 +52,21 @@ function Opt({ icon, title, desc, onPress }: { icon: 'camera' | 'image' | 'text'
 
 function AddSheet() {
   const t = useT();
+  // "Ảnh có sẵn": chọn quét món hay tạo ảnh filter & hashtag
+  const [lib, setLib] = useState(false);
+  if (lib) return (
+    <>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+        <Opt icon="search" title={t.libScan} desc={t.libScanD} onPress={() => pickPhoto('library')} />
+        <Opt icon="sparkle" title={t.libArt} desc={t.libArtD} onPress={openArtFromLibrary} />
+      </View>
+      <Btn small label={t.libBack} onPress={() => setLib(false)} />
+    </>
+  );
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
       <Opt icon="camera" title={t.optCam} desc={t.optCamD} onPress={() => pickPhoto('camera')} />
-      <Opt icon="image" title={t.optGal} desc={t.optGalD} onPress={() => pickPhoto('library')} />
+      <Opt icon="image" title={t.optGal} desc={t.optGalD} onPress={() => setLib(true)} />
       <Opt icon="text" title={t.optText} desc={t.optTextD} onPress={() => openSheet('text')} />
       <Opt icon="search" title={t.optList} desc={t.optListD} onPress={() => openList(false)} />
     </View>

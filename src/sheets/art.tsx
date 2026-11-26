@@ -68,7 +68,8 @@ const Shade = ({ from = 0, to = 0.75, top }: { from?: number; to?: number; top?:
   </Svg>
 );
 
-type Info = { title: string; kcal: string; macros: { p: number; c: number; f: number }; tags: string };
+/** kcal / macros = null khi ảnh không gắn với bữa ăn nào (chọn từ thư viện chỉ để tạo ảnh). */
+type Info = { title: string; kcal: string | null; macros: { p: number; c: number; f: number } | null; tags: string };
 
 function Layout({ id, uri, f, info }: { id: LayoutId; uri: string; f: FilterId; info: Info }) {
   const { w, h } = SIZE[id];
@@ -76,7 +77,8 @@ function Layout({ id, uri, f, info }: { id: LayoutId; uri: string; f: FilterId; 
   const white = { color: '#ffffff' };
   const shadow = { textShadowColor: 'rgba(0,0,0,0.45)', textShadowRadius: 6, textShadowOffset: { width: 0, height: 1 } };
   const brand = (color = '#ffffff') => <T style={{ color, fontSize: 10, fontWeight: '800', letterSpacing: 0.5 }}>{`🍜 ${APP}`}</T>;
-  const macroLine = `${t.protein} ${info.macros.p}g · ${t.carb} ${info.macros.c}g · ${t.fat} ${info.macros.f}g`;
+  const m = info.macros;
+  const macroLine = m ? `${t.protein} ${m.p}g · ${t.carb} ${m.c}g · ${t.fat} ${m.f}g` : '';
   let body: ReactNode;
   if (id === 'clean') body = (
     <>
@@ -84,7 +86,7 @@ function Layout({ id, uri, f, info }: { id: LayoutId; uri: string; f: FilterId; 
       <Shade />
       <View style={{ position: 'absolute', left: 16, right: 16, bottom: 14, gap: 3 }}>
         <T numberOfLines={2} style={[white, shadow, { fontSize: 20, fontWeight: '800' }]}>{info.title}</T>
-        <T style={[white, { fontSize: 12, opacity: 0.92 }]}>{`${info.kcal} kcal · ${macroLine}`}</T>
+        {!!info.kcal && <T style={[white, { fontSize: 12, opacity: 0.92 }]}>{`${info.kcal} kcal · ${macroLine}`}</T>}
         <T numberOfLines={2} style={{ color: '#9be7c4', fontSize: 11, fontWeight: '600' }}>{info.tags}</T>
         <View style={{ alignSelf: 'flex-end', marginTop: 2 }}>{brand()}</View>
       </View>
@@ -96,20 +98,21 @@ function Layout({ id, uri, f, info }: { id: LayoutId; uri: string; f: FilterId; 
         <Photo uri={uri} f={f} style={{ width: w - 56, height: w - 56 }} />
         <T numberOfLines={1} style={{ color: '#3b2f22', fontSize: 16, fontStyle: 'italic', fontWeight: '600', textAlign: 'center' }}>{info.title}</T>
       </View>
-      <T style={{ color: '#5d4a36', fontSize: 12, textAlign: 'center' }}>{`${info.kcal} kcal · ${macroLine}`}</T>
+      {!!info.kcal && <T style={{ color: '#5d4a36', fontSize: 12, textAlign: 'center' }}>{`${info.kcal} kcal · ${macroLine}`}</T>}
       <T numberOfLines={2} style={{ color: '#a3561a', fontSize: 11, textAlign: 'center' }}>{info.tags}</T>
       <View style={{ alignItems: 'center' }}>{brand('#3b2f22')}</View>
     </View>
   );
   else if (id === 'card') {
-    const tot = info.macros.p * 4 + info.macros.c * 4 + info.macros.f * 9 || 1;
-    const bars = [[t.protein, info.macros.p, (info.macros.p * 4) / tot, '#d9654f'], [t.carb, info.macros.c, (info.macros.c * 4) / tot, '#c48a12'], [t.fat, info.macros.f, (info.macros.f * 9) / tot, '#3a6ea5']] as const;
+    const mm = m || { p: 0, c: 0, f: 0 };
+    const tot = mm.p * 4 + mm.c * 4 + mm.f * 9 || 1;
+    const bars = m ? ([[t.protein, mm.p, (mm.p * 4) / tot, '#d9654f'], [t.carb, mm.c, (mm.c * 4) / tot, '#c48a12'], [t.fat, mm.f, (mm.f * 9) / tot, '#3a6ea5']] as const) : [];
     body = (
       <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
         <Photo uri={uri} f={f} style={{ width: w, height: h * 0.56 }} />
         <View style={{ flex: 1, padding: 14, gap: 6 }}>
-          <T numberOfLines={1} style={{ color: '#16231d', fontSize: 16, fontWeight: '800' }}>{info.title}</T>
-          <T style={{ color: '#0f6b4f', fontSize: 26, fontWeight: '800' }}>{info.kcal}<T style={{ fontSize: 12, color: '#5d6d65', fontWeight: '600' }}> kcal</T></T>
+          <T numberOfLines={info.kcal ? 1 : 3} style={{ color: '#16231d', fontSize: info.kcal ? 16 : 22, fontWeight: '800' }}>{info.title}</T>
+          {!!info.kcal && <T style={{ color: '#0f6b4f', fontSize: 26, fontWeight: '800' }}>{info.kcal}<T style={{ fontSize: 12, color: '#5d6d65', fontWeight: '600' }}> kcal</T></T>}
           {bars.map(([n, g, frac, col]) => (
             <View key={n} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <T style={{ width: 52, fontSize: 10, color: '#5d6d65' }}>{n}</T>
@@ -134,8 +137,8 @@ function Layout({ id, uri, f, info }: { id: LayoutId; uri: string; f: FilterId; 
         <T numberOfLines={3} style={[white, shadow, { fontSize: 28, fontWeight: '900', textTransform: 'uppercase', lineHeight: 30, marginTop: 6 }]}>{info.title}</T>
       </View>
       <View style={{ position: 'absolute', left: 16, right: 16, bottom: 14 }}>
-        <T style={[white, shadow, { fontSize: 54, fontWeight: '900', lineHeight: 58 }]}>{info.kcal}<T style={{ fontSize: 16, fontWeight: '800', color: '#ffffff' }}> KCAL</T></T>
-        <T style={[white, { fontSize: 11, opacity: 0.9 }]}>{macroLine}</T>
+        {!!info.kcal && <T style={[white, shadow, { fontSize: 54, fontWeight: '900', lineHeight: 58 }]}>{info.kcal}<T style={{ fontSize: 16, fontWeight: '800', color: '#ffffff' }}> KCAL</T></T>}
+        {!!macroLine && <T style={[white, { fontSize: 11, opacity: 0.9 }]}>{macroLine}</T>}
         <T numberOfLines={2} style={{ color: '#ffd28a', fontSize: 11, fontWeight: '700', marginTop: 4 }}>{info.tags}</T>
       </View>
     </>
@@ -147,8 +150,8 @@ function Layout({ id, uri, f, info }: { id: LayoutId; uri: string; f: FilterId; 
       <T style={[white, shadow, { position: 'absolute', top: 30, left: 0, right: 0, textAlign: 'center', fontSize: 18, fontWeight: '800' }]}>{t.arStory}</T>
       <View style={{ position: 'absolute', left: 18, right: 18, bottom: 36, padding: 14, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.92)', gap: 4, alignItems: 'center' }}>
         <T numberOfLines={2} style={{ color: '#16231d', fontSize: 16, fontWeight: '800', textAlign: 'center' }}>{info.title}</T>
-        <T style={{ color: '#0f6b4f', fontSize: 24, fontWeight: '900' }}>{`${info.kcal} kcal`}</T>
-        <T style={{ color: '#5d6d65', fontSize: 10 }}>{macroLine}</T>
+        {!!info.kcal && <T style={{ color: '#0f6b4f', fontSize: 24, fontWeight: '900' }}>{`${info.kcal} kcal`}</T>}
+        {!!macroLine && <T style={{ color: '#5d6d65', fontSize: 10 }}>{macroLine}</T>}
         <T numberOfLines={2} style={{ color: '#a3561a', fontSize: 10, fontWeight: '600', textAlign: 'center' }}>{info.tags}</T>
         {brand('#0f6b4f')}
       </View>
@@ -164,23 +167,28 @@ function defaultTags(names: string[]) {
 }
 
 export function ArtSheet() {
-  const { rv, photo, lang } = useApp();
+  const { rv, photo, lang, artUri } = useApp();
   const t = useT(), c = useColors();
-  const items = rv?.items || [];
+  // artUri: ảnh chọn từ thư viện chỉ để tạo ảnh, không gắn với bữa ăn
+  const standalone = !!artUri;
+  const items = standalone ? [] : rv?.items || [];
   const sv = Number(rv?.servings) || 1;
   const names = items.map((it) => itemName(lang, it));
   // ảnh gốc độ phân giải cao nếu đang ở lượt chụp này; bữa đã lưu chỉ còn ảnh nhỏ
-  const fullUri = photo && rv?.photo && photo.thumb === rv.photo ? photo.uri : null;
+  const fullUri = artUri || (photo && rv?.photo && photo.thumb === rv.photo ? photo.uri : null);
   const [picked, setPicked] = useState<string | null>(null);
-  const uri = picked || fullUri || rv?.photo || null;
+  const uri = picked || fullUri || (standalone ? null : rv?.photo) || null;
   const [f, setF] = useState<FilterId>('warm');
   const [layout, setLayout] = useState<LayoutId>('clean');
   const [tags, setTags] = useState(() => defaultTags(names));
+  const [tagsEdited, setTagsEdited] = useState(false);
+  const [dish, setDish] = useState('');
   const shot = useRef<ComponentRef<typeof View>>(null);
   const r0 = (n: number) => Math.round(n).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN');
   const info: Info = {
-    title: names.join(', ') || APP, kcal: r0(sum(items, 'kcal') * sv),
-    macros: { p: Math.round(sum(items, 'p') * sv), c: Math.round(sum(items, 'c') * sv), f: Math.round(sum(items, 'f') * sv) },
+    title: (standalone ? dish.trim() : names.join(', ')) || APP,
+    kcal: items.length ? r0(sum(items, 'kcal') * sv) : null,
+    macros: items.length ? { p: Math.round(sum(items, 'p') * sv), c: Math.round(sum(items, 'c') * sv), f: Math.round(sum(items, 'f') * sv) } : null,
     tags: tags.trim(),
   };
   const pick = async () => {
@@ -215,9 +223,16 @@ export function ArtSheet() {
           </Pressable>
         ))}
       </View>
+      {standalone && (
+        <View style={{ gap: 4 }}>
+          <T small bold>{t.arDish}</T>
+          <TextInput style={inputStyle(c)} value={dish} placeholder={t.arDishPh} placeholderTextColor={c.muted} maxLength={60} accessibilityLabel={t.arDish}
+            onChangeText={(v) => { setDish(v); if (!tagsEdited) setTags(defaultTags(v.trim() ? [v] : [])); }} />
+        </View>
+      )}
       <View style={{ gap: 4 }}>
         <T small bold>{t.arTags}</T>
-        <TextInput style={[inputStyle(c), { minHeight: 56, textAlignVertical: 'top' }]} multiline value={tags} onChangeText={setTags} maxLength={160}
+        <TextInput style={[inputStyle(c), { minHeight: 56, textAlignVertical: 'top' }]} multiline value={tags} onChangeText={(v) => { setTags(v); setTagsEdited(true); }} maxLength={160}
           autoCapitalize="none" autoCorrect={false} accessibilityLabel={t.arTags} />
       </View>
       <Btn full label={t.arPick} onPress={pick} />

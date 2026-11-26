@@ -39,6 +39,8 @@ type State = {
   advice: Advice;
   /** biệt danh khi chia sẻ so sánh, và thẻ của bạn bè quét gần nhất */
   nick: string; friends: FriendCard[];
+  /** ảnh chọn riêng để tạo ảnh filter (không gắn với bữa ăn) */
+  artUri: string | null;
   /** ngày hôm nay, đổi lúc qua nửa đêm (để màn hình vẽ lại) */
   today: string;
   /** giờ hiện tại (0–23), cập nhật mỗi phút để màn hình vẽ lại khi qua giờ */
@@ -60,7 +62,7 @@ let s: State = {
   viewDate: todayIso(), tab: 'home', sheet: null, rv: null, listTarget: null, pending: null, photo: null,
   cfg: cfg0, prov: cfg0.prov && PROV[cfg0.prov] ? cfg0.prov : 'none', aiMsg: null, gptOpen: false, local: null,
   toast: null, range: [7, 14, 30, 90].includes(store.get<number>('range') || 0) ? store.get<number>('range')! : 7, netMeta: null, busy: false, cmpHidden: store.get<boolean>('cmp-hidden') === true,
-  nick: store.get<string>('nick') || '', friends: loadFriends(),
+  nick: store.get<string>('nick') || '', friends: loadFriends(), artUri: null,
   advice: { busy: false, err: null, text: null, at: null, prov: null, ...(store.get<Partial<Advice>>('advice-last') || {}) },
   today: todayIso(), hour: new Date().getHours(),
 };
@@ -110,7 +112,7 @@ export function closeSheet() { set({ sheet: null }); }
 export function dismissSheet() {
   if (s.sheet === 'ai') { set({ pending: null, gptOpen: false, aiMsg: null }); }
   if (s.sheet === 'list' && s.listTarget === 'review' && s.rv) { set({ sheet: 'review' }); return; }
-  if (s.sheet === 'art' && s.rv) { set({ sheet: 'review' }); return; }
+  if (s.sheet === 'art') { const back = !s.artUri && s.rv; set({ sheet: back ? 'review' : null, artUri: null }); return; }
   set({ sheet: null });
 }
 export function openReview(o: Partial<Review> & { items: EditItem[] }) {
@@ -444,3 +446,10 @@ export function setFriendCode(text: string): FriendCard | null {
   return card;
 }
 export function removeFriend(n: string) { saveFriends(s.friends.filter((f) => !sameNick(f.n, n))); }
+
+// ---------- ảnh filter & hashtag từ thư viện ----------
+export async function openArtFromLibrary() {
+  const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 1 });
+  if (res.canceled || !res.assets?.[0]) return;
+  set({ artUri: res.assets[0].uri, sheet: 'art' });
+}
