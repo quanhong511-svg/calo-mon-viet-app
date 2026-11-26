@@ -51,7 +51,7 @@ const PHOTO_RE = /^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/]+=*$/;
 function cleanMeal(m: any, id: string): Meal {
   const sv = Number(m.servings);
   return {
-    id, meal: Number.isInteger(m.meal) && m.meal >= 0 && m.meal <= 3 ? m.meal : String(m.meal ?? '').slice(0, 30) || 3, time: String(m.time || '').slice(0, 8),
+    id, meal: Number.isInteger(m.meal) && m.meal >= 0 && m.meal <= 5 ? m.meal : String(m.meal ?? '').slice(0, 30) || 3, time: String(m.time || '').slice(0, 8),
     source: String(m.source || 'manual').slice(0, 20), servings: sv > 0 && sv <= 10 ? sv : 1, photo: typeof m.photo === 'string' && PHOTO_RE.test(m.photo) ? m.photo : null, upd: Number(m.upd) || 0,
     items: m.items.filter((it: any) => it && typeof it === 'object').map((it: any) => ({
       id: it.id && byId[it.id] ? it.id : null, name: String(it.name || '?').slice(0, 60), ...(it.custom === true ? { custom: true } : {}), grams: Math.max(0, Number(it.grams) || 0),

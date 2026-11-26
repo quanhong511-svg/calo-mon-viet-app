@@ -2,9 +2,9 @@ import { ActivityIndicator, Image, Pressable, View } from 'react-native';
 
 import { itemName, fmtDate, mealName } from '@/lib/backup';
 import { compareDays, type DayScore } from '@/lib/compare';
-import { addDays, cloneItem, dayMeals, dayTotals, guessMeal, mealTot, showExample, streak, targetOn } from '@/lib/core';
+import { addDays, cloneItem, dayMeals, dayTotals, guessMeal, macroSplit, macroTargets, mealTot, showExample, streak, targetOn } from '@/lib/core';
 import { remindersSupported } from '@/lib/water';
-import { addWater, cancelPhotoAI, mealRemindOf, openReview, setMealRemind, shiftDay, useApp, useT, waterCfgOf } from '@/state/store';
+import { addWater, cancelPhotoAI, mealRemindOf, openReview, openSheet, setMealRemind, shiftDay, useApp, useT, waterCfgOf } from '@/state/store';
 import { Btn, Card, GeminiBadge, Icon, Ring, Row, T, XBtn } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
@@ -32,8 +32,9 @@ export default function Home() {
   const tgt = targetOn(data, viewDate), tt = dayTotals(data, viewDate, viewDate), left = tgt - tt.k;
   const dateLbl = viewDate === td ? t.today : viewDate === addDays(td, -1) ? t.yesterday : fmtDate(lang, viewDate);
   const meals = dayMeals(data, viewDate, viewDate);
+  const mt = macroTargets(data, viewDate);
   const M: [keyof typeof tt, number, string, string][] = [
-    ['p', (tgt * 0.2) / 4, c.protein, t.protein], ['c', (tgt * 0.5) / 4, c.carb, t.carb], ['f', (tgt * 0.3) / 9, c.fat, t.fat],
+    ['p', mt.p, c.protein, t.protein], ['c', mt.c, c.carb, t.carb], ['f', mt.f, c.fat, t.fat],
   ];
   const thumbBox = { width: 64, height: 64, borderRadius: 12, backgroundColor: c.accentSoft, alignItems: 'center' as const, justifyContent: 'center' as const };
 
@@ -58,11 +59,13 @@ export default function Home() {
 
       <View style={{ flexDirection: 'row', gap: 10 }}>
         {M.map(([k, g, col, lbl]) => (
-          <Card key={k} style={{ flex: 1, alignItems: 'center', gap: 4, paddingVertical: 12, paddingHorizontal: 6 }}>
-            <Ring size={54} r={22} width={6} frac={tt[k] / g} color={col} track={c.line} />
-            <T bold style={{ fontSize: 15 }}>{`${r0(tt[k])}/${r0(g)}g`}</T>
-            <T muted style={{ fontSize: 12 }}>{lbl}</T>
-          </Card>
+          <Pressable key={k} style={{ flex: 1 }} accessibilityRole="button" accessibilityHint={t.mcTap} onPress={() => openSheet('macros')}>
+            <Card style={{ alignItems: 'center', gap: 4, paddingVertical: 12, paddingHorizontal: 6 }}>
+              <Ring size={54} r={22} width={6} frac={g ? tt[k] / g : 0} color={col} track={c.line} />
+              <T bold style={{ fontSize: 15 }}>{`${r0(tt[k])}/${r0(g)}g`}</T>
+              <T muted style={{ fontSize: 12 }}>{lbl}</T>
+            </Card>
+          </Pressable>
         ))}
       </View>
 
@@ -176,7 +179,8 @@ function CompareCard() {
     else if (best && best.d !== viewDate && Math.abs(cur.tot.k - best.tot.k) >= 100) tips.push(t.cmpVsBest(cur.tot.k > best.tot.k, r0(Math.abs(cur.tot.k - best.tot.k)), lbl(best.d)));
     const e = cur.tot.p * 4 + cur.tot.c * 4 + cur.tot.f * 9;
     if (e > 0 && tips.length < 3) {
-      const dev = (['p', 'c', 'f'] as const).map((k) => [k, (cur.tot[k] * (k === 'f' ? 9 : 4)) / e - { p: 0.2, c: 0.5, f: 0.3 }[k]] as const)
+      const sp = macroSplit(data, viewDate);
+      const dev = (['p', 'c', 'f'] as const).map((k) => [k, (cur.tot[k] * (k === 'f' ? 9 : 4)) / e - sp[k]] as const)
         .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0];
       if (Math.abs(dev[1]) > 0.08) tips.push(t.cmpMacro({ p: t.protein, c: t.carb, f: t.fat }[dev[0]], dev[1] < 0));
     }

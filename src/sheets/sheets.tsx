@@ -3,11 +3,11 @@ import { useState } from 'react';
 import { Image, Linking, Pressable, TextInput, View } from 'react-native';
 
 import { itemName } from '@/lib/backup';
-import { mk, scaleItem, sum } from '@/lib/core';
+import { macroTargets, MEAL_ORDER, mk, scaleItem, sum, targetOn } from '@/lib/core';
 import { byId, DB } from '@/lib/foods';
 import { norm } from '@/lib/parse-text';
 import {
-  addFromList, aiManual, deleteReview, describe, dismissSheet, finishLocal, gemQuick, openList, openSheet, pasteFromClipboard, pickPhoto, readPasted, recopyPrompt, saveReview, set, startGpt, updateReview, useApp, useT,
+  addFromList, aiManual, deleteReview, describe, dismissSheet, finishLocal, gemQuick, openList, openSheet, pasteFromClipboard, pickPhoto, readPasted, recopyPrompt, saveReview, set, setMacros, startGpt, toast, updateReview, useApp, useT,
 } from '@/state/store';
 import { Btn, Chips, GeminiBadge, Icon, inputStyle, Note, Row, Seg, Sheet, T, XBtn } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
@@ -15,7 +15,7 @@ import { useColors } from '@/ui/theme';
 export default function Sheets() {
   const { sheet, rv } = useApp();
   const t = useT();
-  const title = sheet === 'add' ? t.addTitle : sheet === 'text' ? t.optText : sheet === 'list' ? t.optList : sheet === 'ai' ? t.aiHow : rv?.mealId ? t.rvEdit : t.rvNew;
+  const title = sheet === 'add' ? t.addTitle : sheet === 'text' ? t.optText : sheet === 'list' ? t.optList : sheet === 'ai' ? t.aiHow : sheet === 'macros' ? t.mcTitle : rv?.mealId ? t.rvEdit : t.rvNew;
   return (
     <Sheet visible={!!sheet} onClose={dismissSheet} title={title}>
       {sheet === 'add' && <AddSheet />}
@@ -23,6 +23,7 @@ export default function Sheets() {
       {sheet === 'list' && <ListSheet />}
       {sheet === 'ai' && <AiSheet />}
       {sheet === 'review' && <ReviewSheet />}
+      {sheet === 'macros' && <MacroSheet />}
     </Sheet>
   );
 }
@@ -169,7 +170,7 @@ function ReviewSheet() {
           <T small muted>{t.fat} <T small bold>{r0(tot.f)}g</T></T>
         </Row>
       </Row>
-      <Chips selected={String(rv.meal)} onPress={(v) => updateReview({ meal: Number(v) })} items={t.meals.map((m, i) => ({ v: String(i), label: m }))} />
+      <Chips selected={String(rv.meal)} onPress={(v) => updateReview({ meal: Number(v) })} items={MEAL_ORDER.map((i) => ({ v: String(i), label: t.meals[i] }))} />
       <Row between><T small muted>{t.servings}</T>
         <Seg items={[{ v: 0.5, label: '½' }, { v: 1, label: '1' }, { v: 1.5, label: '1½' }, { v: 2, label: '2' }]} value={sv} onChange={(v) => updateReview({ servings: v })} />
       </Row>
@@ -259,5 +260,39 @@ function NameInput({ value, label, onChange }: { value: string; label: string; o
       />
       <Icon name="pencil" size={15} color={c.muted} />
     </View>
+  );
+}
+
+function MacroSheet() {
+  const { data, viewDate, lang } = useApp();
+  const t = useT(), c = useColors();
+  const cur = macroTargets(data, viewDate), tgt = targetOn(data, viewDate);
+  const [v, setV] = useState({ p: String(Math.round(cur.p)), c: String(Math.round(cur.c)), f: String(Math.round(cur.f)) });
+  const [err, setErr] = useState(false);
+  const r0 = (n: number) => Math.round(n).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN');
+  const g = { p: Number(v.p) || 0, c: Number(v.c) || 0, f: Number(v.f) || 0 };
+  const kcal = g.p * 4 + g.c * 4 + g.f * 9, pct = (k: 'p' | 'c' | 'f') => (kcal ? Math.round((g[k] * (k === 'f' ? 9 : 4) * 100) / kcal) : 0);
+  const rows = [['p', t.protein, c.protein], ['c', t.carb, c.carb], ['f', t.fat, c.fat]] as const;
+  const save = () => {
+    const ok = (['p', 'c', 'f'] as const).every((k) => /^\d{1,4}$/.test(v[k].trim()) && g[k] <= 1000) && kcal > 0;
+    if (!ok) { setErr(true); return; }
+    setMacros(g); toast(t.mcSaved); dismissSheet();
+  };
+  return (
+    <>
+      <T small muted>{data.macros ? t.mcCustom : t.mcAuto}</T>
+      {rows.map(([k, label, col]) => (
+        <Row key={k} between style={{ flexWrap: 'nowrap' }}>
+          <Row style={{ gap: 8, flex: 1 }}><View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: col }} /><T>{label}</T><T small muted>{`${pct(k)}%`}</T></Row>
+          <TextInput style={[inputStyle(c), { width: 96, textAlign: 'right' }]} keyboardType="number-pad" maxLength={4} returnKeyType="done" accessibilityLabel={label}
+            value={v[k]} onChangeText={(x) => { setErr(false); setV((o) => ({ ...o, [k]: x.replace(/\D/g, '') })); }} onSubmitEditing={save} />
+          <T small muted style={{ width: 52 }}>{t.mcGram}</T>
+        </Row>
+      ))}
+      <T small style={{ color: Math.abs(kcal - tgt) > tgt * 0.1 ? c.warn : c.muted }}>{t.mcFrom(r0(kcal), r0(tgt))}</T>
+      {err && <Note>{t.mcBad}</Note>}
+      <Btn full kind="pri" label={t.mcSave} onPress={save} />
+      <Btn full label={t.mcDefault} onPress={() => { setMacros(null); toast(t.mcSaved); dismissSheet(); }} />
+    </>
   );
 }

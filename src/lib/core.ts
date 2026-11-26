@@ -17,6 +17,10 @@ export type Data = {
   waterCfg?: { goal: number; on: boolean; every: number; from: number; to: number };
   /** thông báo tổng kết bữa ăn mỗi tối, at = giờ (17–23) */
   mealRemind?: { on: boolean; at: number };
+  /** mục tiêu gam đạm / tinh bột / béo mỗi ngày; không có thì theo tỉ lệ 20/50/30 của mục tiêu kcal */
+  macros?: { p: number; c: number; f: number };
+  /** hẹn giờ nhắc từng bữa, khoá = số bữa; at = phút từ 0:00 */
+  mealTimes?: Record<string, { on: boolean; at: number }>;
 };
 export type Totals = { k: number; p: number; c: number; f: number };
 
@@ -88,9 +92,28 @@ export function streak(data: Data) {
   while ((data.days[d] || []).length) { n++; d = addDays(d, -1); }
   return n;
 }
+/** Số bữa: 0 sáng, 1 trưa, 2 tối, 3 phụ chiều, 4 phụ sáng, 5 phụ tối (3 giữ nghĩa "bữa phụ" của bản cũ). */
+export const MEAL_COUNT = 6;
+/** Thứ tự hiển thị theo giờ trong ngày. */
+export const MEAL_ORDER = [0, 4, 1, 3, 2, 5] as const;
+export const isSnack = (m: number | string) => typeof m !== 'number' || m >= 3;
 export function guessMeal() {
   const h = new Date().getHours();
-  return h < 4 ? 3 : h < 10 ? 0 : h < 14 ? 1 : h < 17 ? 3 : h < 21 ? 2 : 3;
+  return h < 4 ? 5 : h < 10 ? 0 : h < 11 ? 4 : h < 14 ? 1 : h < 17 ? 3 : h < 21 ? 2 : 5;
+}
+/** Tỉ lệ năng lượng mặc định của đạm / tinh bột / béo. */
+export const SPLIT = { p: 0.2, c: 0.5, f: 0.3 };
+export const KCAL_PER_G = { p: 4, c: 4, f: 9 };
+/** Mục tiêu gam đạm / tinh bột / béo của ngày d. */
+export function macroTargets(data: Data, d: string): Totals {
+  if (data.macros) return { k: data.macros.p * 4 + data.macros.c * 4 + data.macros.f * 9, ...data.macros };
+  const tgt = targetOn(data, d);
+  return { k: tgt, p: (tgt * SPLIT.p) / 4, c: (tgt * SPLIT.c) / 4, f: (tgt * SPLIT.f) / 9 };
+}
+/** Tỉ lệ năng lượng mục tiêu (tổng = 1) suy ra từ mục tiêu gam. */
+export function macroSplit(data: Data, d: string) {
+  const m = macroTargets(data, d), e = m.p * 4 + m.c * 4 + m.f * 9 || 1;
+  return { p: (m.p * 4) / e, c: (m.c * 4) / e, f: (m.f * 9) / e };
 }
 export const toSaved = (it: EditItem): Item => ({
   id: it.id, name: it.name, ...(it.custom ? { custom: true } : {}), grams: Math.round(it.grams), kcal: +it.kcal.toFixed(1), p: +it.p.toFixed(1), c: +it.c.toFixed(1), f: +it.f.toFixed(1),

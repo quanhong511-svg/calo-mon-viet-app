@@ -8,10 +8,11 @@ import { Keyboard, Linking, Platform, Pressable, TextInput, View } from 'react-n
 
 import { PROV, type ProvCfg, type ProvId } from '@/lib/ai';
 import { backup, fmtDate, mergeBackup, toCsv, toText, validTarget } from '@/lib/backup';
-import { setTarget, todayIso, pad } from '@/lib/core';
+import { macroSplit, macroTargets, MEAL_ORDER, setTarget, todayIso, pad } from '@/lib/core';
+import { fmtTime, mealTimesOf } from '@/lib/meal-remind';
 import { embedBackup, extractBackup, isPdf, logPdfHtml } from '@/lib/log-pdf';
 import { getFoodNet } from '@/lib/photo';
-import { commit, get, mealRemindOf, saveCfg, set, setLang, setMealRemind, setProv, setWaterCfg, toast, useApp, useT, waterCfg, waterCfgOf } from '@/state/store';
+import { commit, get, mealRemindOf, openSheet, saveCfg, set, setLang, setMealRemind, setMealTime, setProv, setWaterCfg, toast, useApp, useT, waterCfg, waterCfgOf } from '@/state/store';
 import { remindersSupported, slots } from '@/lib/water';
 import { Btn, Card, Icon, inputStyle, Note, Row, Seg, T } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
@@ -131,7 +132,13 @@ export default function Settings() {
         <Row between><T>{t.language}</T>
           <Seg items={[{ v: 'vi', label: 'Tiếng Việt' }, { v: 'en', label: 'English' }]} value={lang} onChange={setLang} />
         </Row>
-        <T small muted>{t.split}</T>
+        <Row between style={{ flexWrap: 'nowrap' }}>
+          <View style={{ flex: 1, gap: 2 }}>
+            <T small>{(() => { const m = macroTargets(data, viewDate); return `${t.protein} ${Math.round(m.p)}g · ${t.carb} ${Math.round(m.c)}g · ${t.fat} ${Math.round(m.f)}g`; })()}</T>
+            <T small muted>{(() => { const s = macroSplit(data, viewDate); return `${t.mcSplit(Math.round(s.p * 100), Math.round(s.c * 100), Math.round(s.f * 100))} · ${data.macros ? t.mcCustom : t.mcAuto}`; })()}</T>
+          </View>
+          <Btn small label={t.mcEdit} onPress={() => openSheet('macros')} />
+        </Row>
       </Card>
 
       <WaterSettings />
@@ -212,14 +219,14 @@ function NumInput({ value, onCommit, label }: { value: number; onCommit: (txt: s
   );
 }
 
-function Stepper({ value, label, onChange, min, max }: { value: number; label: string; onChange: (v: number) => void; min: number; max: number }) {
+function Stepper({ value, label, onChange, min, max, step = 1, fmt = (v: number) => `${v}:00` }: { value: number; label: string; onChange: (v: number) => void; min: number; max: number; step?: number; fmt?: (v: number) => string }) {
   const c = useColors();
   const b = { width: 38, height: 36, alignItems: 'center' as const, justifyContent: 'center' as const, backgroundColor: c.bg };
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: c.line, borderRadius: 10, overflow: 'hidden' }}>
-      <Pressable accessibilityLabel={`${label} −`} disabled={value <= min} onPress={() => onChange(value - 1)} style={[b, { opacity: value <= min ? 0.4 : 1 }]}><T>−</T></Pressable>
-      <T style={{ width: 58, textAlign: 'center' }}>{`${value}:00`}</T>
-      <Pressable accessibilityLabel={`${label} +`} disabled={value >= max} onPress={() => onChange(value + 1)} style={[b, { opacity: value >= max ? 0.4 : 1 }]}><T>+</T></Pressable>
+      <Pressable accessibilityLabel={`${label} −`} disabled={value <= min} onPress={() => onChange(Math.max(min, value - step))} style={[b, { opacity: value <= min ? 0.4 : 1 }]}><T>−</T></Pressable>
+      <T style={{ width: 58, textAlign: 'center' }}>{fmt(value)}</T>
+      <Pressable accessibilityLabel={`${label} +`} disabled={value >= max} onPress={() => onChange(Math.min(max, value + step))} style={[b, { opacity: value >= max ? 0.4 : 1 }]}><T>+</T></Pressable>
     </View>
   );
 }
@@ -239,6 +246,27 @@ function MealRemindSettings() {
         <>
           <Row between><T>{t.mrAt}</T><Stepper value={m.at} label={t.mrAt} min={17} max={23} onChange={(v) => setMealRemind({ at: v })} /></Row>
           <T small muted>{t.mrNote}</T>
+        </>
+      )}
+      {remindersSupported && (
+        <>
+          <T bold style={{ marginTop: 4 }}>{t.mtTitle}</T>
+          {MEAL_ORDER.map((i) => {
+            const x = mealTimesOf(data)[i];
+            return (
+              <View key={i} style={{ gap: 8 }}>
+                <Row between><T>{t.meals[i]}</T>
+                  <Seg small items={[{ v: 'off', label: t.waterOff }, { v: 'on', label: t.waterOn }]} value={x.on ? 'on' : 'off'} onChange={(v) => setMealTime(i, { on: v === 'on' })} />
+                </Row>
+                {x.on && (
+                  <Row between><T small muted>{t.mtTime}</T>
+                    <Stepper value={x.at} label={`${t.meals[i]} ${t.mtTime}`} min={0} max={23 * 60 + 45} step={15} fmt={fmtTime} onChange={(v) => setMealTime(i, { at: v })} />
+                  </Row>
+                )}
+              </View>
+            );
+          })}
+          <T small muted>{t.mtNote}</T>
         </>
       )}
     </Card>

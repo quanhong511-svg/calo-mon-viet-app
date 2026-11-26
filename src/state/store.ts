@@ -14,10 +14,10 @@ import { parseText } from '@/lib/parse-text';
 import { trendReportHtml } from '@/lib/report';
 import { getFoodNet, modelUsable, prepPhoto, recognizeLocal, type Photo } from '@/lib/photo';
 import { store } from '@/lib/storage';
-import { MEAL_REMIND_DEFAULT, scheduleMealRemind, type MealRemindCfg } from '@/lib/meal-remind';
+import { MEAL_REMIND_DEFAULT, mealTimesOf, scheduleMealRemind, type MealRemindCfg } from '@/lib/meal-remind';
 import { ensurePermission, remindersSupported, scheduleWater, WATER_DEFAULT, type WaterCfg } from '@/lib/water';
 
-export type SheetName = 'add' | 'text' | 'list' | 'ai' | 'review';
+export type SheetName = 'add' | 'text' | 'list' | 'ai' | 'review' | 'macros';
 export type Alt = { id: string; p: number };
 export type Review = {
   mealId: string | null; items: EditItem[]; servings: number; meal: number; photo: string | null; source?: string; note?: string; alts?: Alt[]; altSel?: string;
@@ -327,7 +327,7 @@ export function rescheduleWater(delay = 600) {
   waterTimer = setTimeout(() => {
     // chạy lần lượt: mỗi hàm tự huỷ lịch cũ của mình rồi mới đặt lịch mới
     scheduleWater(waterCfg(), waterOn(todayIso()), tr(), s.lang).catch(() => {})
-      .then(() => scheduleMealRemind(mealRemindOf(s.data), s.data, tr(), s.lang)).catch(() => {});
+      .then(() => scheduleMealRemind(mealRemindOf(s.data), mealTimesOf(s.data), s.data, tr(), s.lang)).catch(() => {});
   }, delay);
 }
 export function addWater(ml: number) {
@@ -350,5 +350,17 @@ export async function setMealRemind(p: Partial<MealRemindCfg>) {
   if (p.on && !(await ensurePermission())) { toast(tr().waterDenied, undefined, 6000); return; }
   commit((d) => { d.mealRemind = { ...MEAL_REMIND_DEFAULT, ...(d.mealRemind || {}), ...p }; });
   if (p.on) toast(tr().mrOnToast(mealRemindOf(s.data).at));
+  rescheduleWater(0);
+}
+
+// ---------- mục tiêu đạm / tinh bột / béo ----------
+export function setMacros(m: { p: number; c: number; f: number } | null) {
+  commit((d) => { if (m) d.macros = { p: Math.round(m.p), c: Math.round(m.c), f: Math.round(m.f) }; else delete d.macros; });
+}
+
+// ---------- hẹn giờ nhắc từng bữa ----------
+export async function setMealTime(i: number, p: Partial<{ on: boolean; at: number }>) {
+  if (p.on && !(await ensurePermission())) { toast(tr().waterDenied, undefined, 6000); return; }
+  commit((d) => { (d.mealTimes ||= {})[i] = { ...mealTimesOf(d)[i], ...p }; });
   rescheduleWater(0);
 }
