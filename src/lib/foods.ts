@@ -37,7 +37,6 @@ const MAIN: Row[] = [
   ['sua-dau-nanh', 'Sữa đậu nành', 'Soy milk', 250, 130, 8, 12, 5],
   ['chuoi', 'Chuối (1 quả)', 'Banana (1)', 120, 105, 1.3, 27, 0.4],
   ['xoai', 'Xoài chín', 'Ripe mango', 200, 120, 1.6, 30, 0.8],
-  ['bia', 'Bia (1 lon)', 'Beer (1 can)', 330, 140, 1, 11, 0],
   ['banh-canh', 'Bánh canh', 'Thick noodle soup (banh canh)', 550, 470, 24, 60, 14],
   ['bun-thit-nuong', 'Bún thịt nướng', 'Grilled pork vermicelli bowl', 400, 530, 25, 65, 19],
   ['bun-dau-mam-tom', 'Bún đậu mắm tôm', 'Vermicelli with fried tofu & shrimp paste', 450, 700, 30, 65, 35],
