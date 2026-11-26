@@ -1,6 +1,7 @@
 import { ActivityIndicator, Image, Pressable, View } from 'react-native';
 
 import { itemName, fmtDate, mealName } from '@/lib/backup';
+import { compareDays, type DayScore } from '@/lib/compare';
 import { addDays, cloneItem, dayMeals, dayTotals, guessMeal, mealTot, showExample, streak, targetOn } from '@/lib/core';
 import { addWater, cancelPhotoAI, openReview, shiftDay, useApp, useT, waterCfgOf } from '@/state/store';
 import { Btn, Card, GeminiBadge, Icon, Ring, Row, T, XBtn } from '@/ui/kit';
@@ -65,6 +66,8 @@ export default function Home() {
       </View>
 
       <WaterCard />
+
+      <CompareCard />
 
       <Row between><T h={2}>{t.mealsTitle}</T>{showExample(data, viewDate) && <T small muted style={{ flexShrink: 1 }}>{t.exNote}</T>}</Row>
 
@@ -140,5 +143,88 @@ function WaterCard() {
         <Btn small label="−" onPress={() => addWater(-250)} disabled={!ml} style={{ width: 52 }} />
       </Row>
     </Card>
+  );
+}
+
+function CompareCard() {
+  const { data, viewDate, lang, today: td } = useApp();
+  const t = useT(), c = useColors();
+  const cmp = compareDays(data, viewDate);
+  if (!cmp) return null;
+  const r0 = (n: number) => Math.round(n).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN');
+  const lbl = (d: string) => (d === td ? t.today : d === addDays(td, -1) ? t.yesterday : fmtDate(lang, d).slice(0, 5));
+  const { days, best } = cmp;
+  const cur = days[2];
+  const scoreCol = (s: number) => (s >= 80 ? c.accent : s >= 50 ? c.fg : c.warn);
+
+  // gợi ý: tối đa 3 dòng
+  const tips: string[] = [];
+  if (best) {
+    const why = [best.parts.energy >= 40 && t.cmpWhyEnergy, best.main.every(Boolean) && t.cmpWhyMeals, best.parts.macro >= 15 && t.cmpWhyMacro].filter(Boolean).join(', ');
+    tips.push(t.cmpBest(lbl(best.d), best.score) + (why ? ` · ${why}` : ''));
+  }
+  // bữa chính còn thiếu của ngày đang xem; với hôm nay chỉ nhắc bữa đã qua giờ (sáng 10h, trưa 14h, tối 20h)
+  const hr = new Date().getHours();
+  const missing = cur.main.map((ok, i) => (!ok && (viewDate !== td || hr >= [10, 14, 20][i]) ? t.meals[i] : null)).filter(Boolean) as string[];
+  if (missing.length) tips.push(t.cmpMissing(lbl(viewDate), missing.join(', ').toLowerCase()));
+  if (cur.logged) {
+    const diff = cur.tot.k - cur.tgt;
+    if (diff > cur.tgt * 0.1) tips.push(t.cmpOver(lbl(viewDate), r0(diff)));
+    else if (viewDate === td && diff < -cur.tgt * 0.1) tips.push(t.cmpLeft(r0(-diff)));
+    else if (viewDate !== td && diff < -cur.tgt * 0.1) tips.push(t.cmpUnder(lbl(viewDate), r0(-diff)));
+    else if (best && best.d !== viewDate && Math.abs(cur.tot.k - best.tot.k) >= 100) tips.push(t.cmpVsBest(cur.tot.k > best.tot.k, r0(Math.abs(cur.tot.k - best.tot.k)), lbl(best.d)));
+    const e = cur.tot.p * 4 + cur.tot.c * 4 + cur.tot.f * 9;
+    if (e > 0 && tips.length < 3) {
+      const dev = (['p', 'c', 'f'] as const).map((k) => [k, (cur.tot[k] * (k === 'f' ? 9 : 4)) / e - { p: 0.2, c: 0.5, f: 0.3 }[k]] as const)
+        .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0];
+      if (Math.abs(dev[1]) > 0.08) tips.push(t.cmpMacro({ p: t.protein, c: t.carb, f: t.fat }[dev[0]], dev[1] < 0));
+    }
+  }
+  if (tips.length === 1 && best?.d === viewDate && best.score >= 80) tips.push(t.cmpGood);
+
+  return (
+    <Card style={{ gap: 12 }}>
+      <Row style={{ gap: 6 }}><Icon name="chart" size={20} color={c.accent} /><T h={3}>{t.cmpTitle}</T></Row>
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        {days.map((x) => <DayCol key={x.d} x={x} label={lbl(x.d)} best={best?.d === x.d} col={scoreCol(x.score)} r0={r0} />)}
+      </View>
+      <View style={{ gap: 6 }}>
+        {tips.slice(0, 3).map((s, i) => (
+          <Row key={i} style={{ gap: 8, flexWrap: 'nowrap', alignItems: 'flex-start' }}>
+            <T style={{ color: i === 0 && best ? c.accent : c.warn, fontSize: 14, lineHeight: 20 }}>{i === 0 && best ? '★' : '•'}</T>
+            <T small style={{ flex: 1, lineHeight: 20 }}>{s}</T>
+          </Row>
+        ))}
+      </View>
+      <T muted style={{ fontSize: 11 }}>{t.cmpHint}</T>
+    </Card>
+  );
+}
+
+function DayCol({ x, label, best, col, r0 }: { x: DayScore; label: string; best: boolean; col: string; r0: (n: number) => string }) {
+  const t = useT(), c = useColors();
+  return (
+    <View accessibilityLabel={`${label}: ${x.logged ? `${x.score} ${t.cmpPts}, ${r0(x.tot.k)} / ${r0(x.tgt)} kcal` : t.cmpNone}`}
+      style={{ flex: 1, alignItems: 'center', gap: 4, paddingVertical: 10, paddingHorizontal: 4, borderRadius: 12, borderWidth: best ? 1.5 : 1, borderColor: best ? c.accent : c.line, backgroundColor: best ? c.accentSoft : c.bg }}>
+      <T small bold numberOfLines={1}>{best ? `★ ${label}` : label}</T>
+      {x.logged ? (
+        <>
+          <T style={{ fontSize: 24, fontWeight: '700', color: col }}>{x.score}<T muted style={{ fontSize: 11, fontWeight: '400' }}>{' ' + t.cmpPts}</T></T>
+          <T muted style={{ fontSize: 11 }}>{`${r0(x.tot.k)}/${r0(x.tgt)}`}</T>
+          <View style={{ width: '80%', height: 5, borderRadius: 3, backgroundColor: c.line, overflow: 'hidden' }}>
+            <View style={{ width: `${Math.min(100, (x.tot.k / x.tgt) * 100)}%`, height: '100%', backgroundColor: x.tot.k > x.tgt * 1.1 ? c.warn : c.accent }} />
+          </View>
+          <Row style={{ gap: 4, marginTop: 2 }}>
+            {x.main.map((ok, i) => (
+              <View key={i} style={{ width: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: ok ? c.accent : 'transparent', borderWidth: 1, borderColor: ok ? c.accent : c.line }}>
+                <T style={{ fontSize: 10, fontWeight: '700', color: ok ? c.onAccent : c.muted }}>{t.cmpAbbr[i]}</T>
+              </View>
+            ))}
+          </Row>
+        </>
+      ) : (
+        <View style={{ flex: 1, justifyContent: 'center', minHeight: 70 }}><T muted small>{t.cmpNone}</T></View>
+      )}
+    </View>
   );
 }

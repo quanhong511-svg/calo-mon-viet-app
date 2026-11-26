@@ -35,6 +35,14 @@ const vi = {
   altsTitle: 'Không đúng? Chọn món khác:', p_none: 'Không dùng (hỏi mỗi lần)', p_none_d: 'Mỗi lần chụp sẽ hỏi: ChatGPT miễn phí hoặc tự chọn món.',
   errHttp: (s: number, m?: string) => `Lỗi từ máy chủ AI (${s}). ${m || ''}`, errNet: 'Không kết nối được máy chủ AI. Kiểm tra mạng hoặc key.', imgFail: 'Ảnh không đọc được.',
   footer: 'Số liệu dinh dưỡng là giá trị tham khảo cho khẩu phần phổ biến, cần đối chiếu Bảng thành phần thực phẩm Việt Nam (Viện Dinh dưỡng Quốc gia). Ước lượng từ ảnh thường sai 20–30%. Không dùng để tính liều thuốc hay thay tư vấn của bác sĩ, chuyên gia dinh dưỡng.',
+  cmpTitle: 'So sánh 3 ngày gần nhất', cmpPts: 'điểm', cmpNone: 'chưa ghi', cmpAbbr: ['S', 'T', 'T'],
+  cmpHint: 'Điểm = năng lượng sát mục tiêu (50) + đủ 3 bữa chính (30) + cân đối đạm/tinh bột/béo (20).',
+  cmpBest: (day: string, s: number) => `Tối ưu nhất: ${day} · ${s} điểm`, cmpWhyEnergy: 'năng lượng sát mục tiêu', cmpWhyMeals: 'đủ 3 bữa chính', cmpWhyMacro: 'dinh dưỡng cân đối',
+  cmpMissing: (day: string, list: string) => `${day} chưa ghi: ${list}`, cmpLeft: (n: string) => `Còn ${n} kcal nữa là đạt mục tiêu`, cmpOver: (day: string, n: string) => `${day} vượt mục tiêu ${n} kcal`,
+  cmpUnder: (day: string, n: string) => `${day} thiếu ${n} kcal so với mục tiêu`,
+  cmpVsBest: (more: boolean, n: string, day: string) => `${more ? 'Nhiều' : 'Ít'} hơn ${day} ${n} kcal`,
+  cmpMacro: (name: string, low: boolean) => `${name} đang ${low ? 'thấp' : 'cao'} so với tỉ lệ khuyến nghị`,
+  cmpGood: 'Đang đi đúng hướng, giữ nhịp này nhé!',
 };
 
 export type Strings = typeof vi;
@@ -75,6 +83,14 @@ const en: Strings = {
   altsTitle: 'Not right? Pick another dish:', p_none: 'None (ask each time)', p_none_d: 'Each photo asks: free ChatGPT or pick dishes yourself.',
   errHttp: (s: number, m?: string) => `AI server error (${s}). ${m || ''}`, errNet: "Couldn't reach the AI server. Check the connection or key.", imgFail: "The photo couldn't be read.",
   footer: 'Nutrition values are reference figures for typical servings; check them against the Vietnamese Food Composition Table (National Institute of Nutrition). Photo estimates are often off by 20–30%. Not for medication dosing and no substitute for a doctor or dietitian.',
+  cmpTitle: 'Last 3 days compared', cmpPts: 'pts', cmpNone: 'no log', cmpAbbr: ['B', 'L', 'D'],
+  cmpHint: 'Score = energy close to goal (50) + all 3 main meals (30) + protein/carb/fat balance (20).',
+  cmpBest: (day: string, s: number) => `Best day: ${day} · ${s} pts`, cmpWhyEnergy: 'energy close to goal', cmpWhyMeals: 'all 3 main meals', cmpWhyMacro: 'balanced nutrients',
+  cmpMissing: (day: string, list: string) => `${day} missing: ${list}`, cmpLeft: (n: string) => `${n} kcal more to reach your goal`, cmpOver: (day: string, n: string) => `${day} is ${n} kcal over goal`,
+  cmpUnder: (day: string, n: string) => `${day} is ${n} kcal under goal`,
+  cmpVsBest: (more: boolean, n: string, day: string) => `${n} kcal ${more ? 'more' : 'less'} than ${day}`,
+  cmpMacro: (name: string, low: boolean) => `${name} is ${low ? 'low' : 'high'} vs. the recommended split`,
+  cmpGood: "You're on track, keep it up!",
 };
 
 export type Lang = 'vi' | 'en';
