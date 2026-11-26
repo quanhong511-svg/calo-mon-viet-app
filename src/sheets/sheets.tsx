@@ -3,11 +3,12 @@ import { useState } from 'react';
 import { Image, Linking, Pressable, TextInput, View } from 'react-native';
 
 import { itemName } from '@/lib/backup';
+import { cheersFor } from '@/lib/cheers';
 import { macroTargets, MEAL_ORDER, mk, scaleItem, sum, targetOn } from '@/lib/core';
 import { byId, DB } from '@/lib/foods';
 import { norm } from '@/lib/parse-text';
 import {
-  addFromList, aiManual, deleteReview, describe, dismissSheet, finishLocal, gemQuick, openList, openSheet, pasteFromClipboard, pickPhoto, readPasted, recopyPrompt, saveReview, set, setMacros, startGpt, toast, updateReview, useApp, useT,
+  addFromList, aiManual, deleteReview, describe, dismissSheet, finishLocal, gemQuick, openList, openSheet, pasteFromClipboard, pickPhoto, readPasted, recopyPrompt, saveReview, set, setMacros, startGpt, toast, waterCfgOf, updateReview, useApp, useT,
 } from '@/state/store';
 import { Btn, Chips, GeminiBadge, Icon, inputStyle, Note, Row, Seg, Sheet, T, XBtn } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
@@ -15,7 +16,7 @@ import { useColors } from '@/ui/theme';
 export default function Sheets() {
   const { sheet, rv } = useApp();
   const t = useT();
-  const title = sheet === 'add' ? t.addTitle : sheet === 'text' ? t.optText : sheet === 'list' ? t.optList : sheet === 'ai' ? t.aiHow : sheet === 'macros' ? t.mcTitle : rv?.mealId ? t.rvEdit : t.rvNew;
+  const title = sheet === 'add' ? t.addTitle : sheet === 'text' ? t.optText : sheet === 'list' ? t.optList : sheet === 'ai' ? t.aiHow : sheet === 'macros' ? t.mcTitle : sheet === 'cheers' ? t.chTitle : rv?.mealId ? t.rvEdit : t.rvNew;
   return (
     <Sheet visible={!!sheet} onClose={dismissSheet} title={title}>
       {sheet === 'add' && <AddSheet />}
@@ -24,6 +25,7 @@ export default function Sheets() {
       {sheet === 'ai' && <AiSheet />}
       {sheet === 'review' && <ReviewSheet />}
       {sheet === 'macros' && <MacroSheet />}
+      {sheet === 'cheers' && <CheersSheet />}
     </Sheet>
   );
 }
@@ -293,6 +295,43 @@ function MacroSheet() {
       {err && <Note>{t.mcBad}</Note>}
       <Btn full kind="pri" label={t.mcSave} onPress={save} />
       <Btn full label={t.mcDefault} onPress={() => { setMacros(null); toast(t.mcSaved); dismissSheet(); }} />
+    </>
+  );
+}
+
+function CheersSheet() {
+  const { data, today, lang } = useApp();
+  const t = useT(), c = useColors();
+  const r0 = (n: number) => Math.round(n).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN');
+  const list = cheersFor(data, today);
+  // một câu cổ vũ ngẫu nhiên, cố định trong lần mở này
+  const [pick] = useState(() => Math.floor(Math.random() * 100));
+  const goal = r0(waterCfgOf(data).goal);
+  if (!list.length) {
+    return (
+      <View style={{ alignItems: 'center', gap: 8, paddingVertical: 12 }}>
+        <T style={{ fontSize: 44 }}>🌱</T>
+        <T bold style={{ textAlign: 'center' }}>{t.chEmpty}</T>
+        <T small muted style={{ textAlign: 'center' }}>{t.chEmptyHint(goal)}</T>
+      </View>
+    );
+  }
+  return (
+    <>
+      <T style={{ fontSize: 22, fontWeight: '700', textAlign: 'center', color: c.accent }}>{list.every((x) => x.id === 'bigEater') ? t.chFeast : `🎉 ${t.chCheers[pick % t.chCheers.length]}`}</T>
+      {list.map((x) => {
+        const v = Object.fromEntries(Object.entries(x.vals).map(([k, n]) => [k, r0(n)]));
+        return (
+          <View key={x.id} style={{ flexDirection: 'row', gap: 12, padding: 12, borderRadius: 14, borderWidth: 1, borderColor: c.line, backgroundColor: x.id === 'bigEater' ? c.warnSoft : c.accentSoft }}>
+            <T style={{ fontSize: 32 }}>{x.emoji}</T>
+            <View style={{ flex: 1, gap: 2 }}>
+              <T bold>{t.chNames[x.id]}</T>
+              <T small>{t.chBody[x.id](v)}</T>
+            </View>
+          </View>
+        );
+      })}
+      <Btn full kind="pri" label="OK" onPress={dismissSheet} />
     </>
   );
 }

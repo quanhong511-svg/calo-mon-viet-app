@@ -249,11 +249,9 @@ function CoffeeSettings() {
           <Row between><T>{t.coffeeMode}</T>
             <Seg small items={[{ v: 'morning' as const, label: t.coffeeMorning }, { v: 'idle' as const, label: t.coffeeIdle }]} value={k.mode} onChange={(v) => setCoffeeCfg({ mode: v })} />
           </Row>
-          {k.mode === 'morning' && (
-            <Row between><T>{t.coffeeAt}</T>
-              <Stepper value={k.at} label={t.coffeeAt} min={5 * 60} max={11 * 60 + 45} step={15} fmt={fmtTime} onChange={(v) => setCoffeeCfg({ at: v })} />
-            </Row>
-          )}
+          <Row between><T>{k.mode === 'morning' ? t.coffeeAt : t.coffeeFirst}</T>
+            <Stepper value={k.at} label={k.mode === 'morning' ? t.coffeeAt : t.coffeeFirst} min={5 * 60} max={11 * 60 + 45} step={15} fmt={fmtTime} onChange={(v) => setCoffeeCfg({ at: v })} />
+          </Row>
           <T small muted>{k.mode === 'morning' ? t.coffeeNoteMorning : t.coffeeNoteIdle}</T>
         </>
       )}

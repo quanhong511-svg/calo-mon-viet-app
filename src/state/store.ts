@@ -14,11 +14,12 @@ import { parseText } from '@/lib/parse-text';
 import { trendReportHtml } from '@/lib/report';
 import { getFoodNet, modelUsable, prepPhoto, recognizeLocal, type Photo } from '@/lib/photo';
 import { store } from '@/lib/storage';
-import { coffeeCfgOf, scheduleCoffee, type CoffeeCfg, type CoffeeKind } from '@/lib/coffee';
+import { coffeeCfgOf, type CoffeeCfg, type CoffeeKind } from '@/lib/coffee';
+import { scheduleCoffee } from '@/lib/coffee-remind';
 import { MEAL_REMIND_DEFAULT, mealTimesOf, scheduleMealRemind, type MealRemindCfg } from '@/lib/meal-remind';
 import { ensurePermission, remindersSupported, scheduleWater, WATER_DEFAULT, type WaterCfg } from '@/lib/water';
 
-export type SheetName = 'add' | 'text' | 'list' | 'ai' | 'review' | 'macros';
+export type SheetName = 'add' | 'text' | 'list' | 'ai' | 'review' | 'macros' | 'cheers';
 export type Alt = { id: string; p: number };
 export type Review = {
   mealId: string | null; items: EditItem[]; servings: number; meal: number; photo: string | null; source?: string; note?: string; alts?: Alt[]; altSel?: string;
@@ -383,6 +384,7 @@ export function addCoffee(kind: CoffeeKind, delta: 1 | -1) {
     const c = ((d.coffee ||= {})[day] ||= {});
     if (next) c[kind] = next; else delete c[kind];
     if (!Object.keys(c).length) delete d.coffee![day];
+    if (delta > 0 && day === todayIso()) d.coffeeLast = Date.now();
   });
 }
 export async function setCoffeeCfg(p: Partial<CoffeeCfg>) {

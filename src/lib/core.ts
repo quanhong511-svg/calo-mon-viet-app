@@ -21,7 +21,9 @@ export type Data = {
   macros?: { p: number; c: number; f: number };
   /** số ly cà phê theo ngày và loại */
   coffee?: Record<string, Partial<Record<'po' | 'es' | 'la' | 'jc', number>>>;
-  /** nhắc uống cà phê: mỗi sáng lúc at (phút từ 0:00), hoặc sau 4 giờ không mở app */
+  /** thời điểm (ms) ghi ly cà phê gần nhất, để nhắc 4 giờ sau ly đó */
+  coffeeLast?: number;
+  /** nhắc uống cà phê: mỗi sáng lúc at (phút từ 0:00), hoặc 4 giờ sau ly gần nhất ('idle'; ly đầu ngày nhắc lúc at) */
   coffeeCfg?: { on: boolean; mode: 'morning' | 'idle'; at: number };
   /** hẹn giờ nhắc từng bữa, khoá = số bữa; at = phút từ 0:00 */
   mealTimes?: Record<string, { on: boolean; at: number }>;

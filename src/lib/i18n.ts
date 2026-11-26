@@ -62,11 +62,22 @@ const vi = {
   coffee: 'Cà phê', coffeeTypes: { po: 'Pour Over', es: 'Espresso', la: 'Latte', jc: 'Just Coffee' },
   coffeeSum: (n: number, mg: string) => `${n} ly · ~${mg} mg caffeine`, coffeeNone: 'Chưa uống ly nào', coffeeHint: 'Chạm để thêm một ly, nhấn giữ để bớt.',
   coffeeHigh: 'Đã quá 400 mg caffeine, mức khuyến nghị tối đa mỗi ngày.',
-  coffeeRemind: 'Nhắc uống cà phê', coffeeMode: 'Kiểu nhắc', coffeeMorning: 'Mỗi sáng', coffeeIdle: 'Sau 4 giờ',
+  coffeeRemind: 'Nhắc uống cà phê', coffeeMode: 'Kiểu nhắc', coffeeMorning: 'Mỗi sáng', coffeeIdle: 'Sau ly 4 giờ', coffeeFirst: 'Nhắc ly đầu ngày',
   coffeeAt: 'Giờ nhắc', coffeeNoteMorning: 'Mỗi sáng một lời nhắc; hôm nào đã ghi cà phê thì không nhắc nữa.',
-  coffeeNoteIdle: 'Nhắc khi bạn không mở app 4 giờ liền (không nhắc từ 22:00 đến 7:00, không nhắc khi đã quá 400 mg).',
+  coffeeNoteIdle: 'Nhắc 4 giờ sau ly cà phê gần nhất bạn ghi. Hôm nào chưa uống ly nào thì nhắc ly đầu vào giờ đã chọn. Không nhắc từ 22:00 đến 7:00 hoặc khi đã quá 400 mg.',
   coffeeTitleMorning: '☕ Cà phê sáng nào!', coffeeBodyMorning: 'Pha một ly cho ngày mới và nhớ ghi lại trong app nhé.',
-  coffeeTitleIdle: '☕ Nghỉ tay uống cà phê?', coffeeBodyIdle: 'Đã 4 giờ bạn chưa mở app. Uống một ly rồi ghi lại nhé.',
+  coffeeTitleIdle: '☕ Nghỉ tay uống cà phê?', coffeeBodyIdle: 'Đã 4 giờ từ ly cà phê gần nhất. Thêm một ly cho tỉnh táo nhé?',
+  chTitle: 'Lời chúc hôm nay', chTap: 'Chạm để xem lời chúc và thành tích hôm nay',
+  chNames: { bigEater: 'Chiến thần ăn uống', eatWell: 'Ăn khoẻ', water: 'Uống nước tốt', coffee: 'Uống cafe siêu đấy', control: 'Kiểm soát chế độ ăn cực tốt' },
+  chBody: {
+    bigEater: (v: Record<string, string>) => `Hôm nay bạn đã “xử” ${v.k} kcal, vượt mục tiêu ${v.over} kcal. Ăn ngon là một niềm vui, mai mình cân lại chút nhé!`,
+    eatWell: (v: Record<string, string>) => `Đủ bữa chính, năng lượng sát mục tiêu, dinh dưỡng cân đối – ${v.score} điểm. Cơ thể đang rất biết ơn bạn!`,
+    water: (v: Record<string, string>) => `Đã uống ${v.ml} ml, đủ mục tiêu ${v.goal} ml. Da đẹp, đầu óc minh mẫn!`,
+    coffee: (v: Record<string, string>) => `${v.cups} ly cà phê hôm nay (~${v.mg} mg caffeine). Tỉnh như sáo! Nhớ đừng vượt 400 mg nhé.`,
+    control: (v: Record<string, string>) => `${v.days} ngày liền đúng mục tiêu calo và đủ 3 bữa. Kỷ luật đỉnh cao, cứ thế mà phát huy!`,
+  },
+  chFeast: '😋 Ngon miệng ghê!', chCheers: ['Tuyệt vời!', 'Quá đỉnh!', 'Giữ vững phong độ nhé!', 'Bạn làm tốt lắm!', 'Tự hào về bạn!'],
+  chEmpty: 'Hôm nay chưa có thành tích nào', chEmptyHint: (goal: string) => `Thử ghi đủ 3 bữa chính, ăn sát mục tiêu calo hoặc uống đủ ${goal} ml nước để nhận lời chúc nhé!`,
 };
 
 export type Strings = typeof vi;
@@ -134,11 +145,22 @@ const en: Strings = {
   coffee: 'Coffee', coffeeTypes: { po: 'Pour Over', es: 'Espresso', la: 'Latte', jc: 'Just Coffee' },
   coffeeSum: (n: number, mg: string) => `${n} cup${n === 1 ? '' : 's'} · ~${mg} mg caffeine`, coffeeNone: 'No coffee yet', coffeeHint: 'Tap to add a cup, long-press to remove one.',
   coffeeHigh: 'Over 400 mg caffeine, the recommended daily maximum.',
-  coffeeRemind: 'Coffee reminders', coffeeMode: 'Remind', coffeeMorning: 'Every morning', coffeeIdle: 'After 4 h',
+  coffeeRemind: 'Coffee reminders', coffeeMode: 'Remind', coffeeMorning: 'Every morning', coffeeIdle: '4 h after a cup', coffeeFirst: 'First cup reminder',
   coffeeAt: 'Time', coffeeNoteMorning: "One reminder each morning; skipped on days you've already logged coffee.",
-  coffeeNoteIdle: "Reminds you when you haven't opened the app for 4 hours (not between 22:00 and 7:00, not once you're over 400 mg).",
+  coffeeNoteIdle: "Reminds you 4 hours after the last cup you logged. On days with no coffee yet, it reminds you at the chosen time. No reminders between 22:00 and 7:00 or once you're over 400 mg.",
   coffeeTitleMorning: '☕ Morning coffee time!', coffeeBodyMorning: 'Brew a cup for the day and remember to log it.',
-  coffeeTitleIdle: '☕ Coffee break?', coffeeBodyIdle: "You haven't opened the app in 4 hours. Grab a cup and log it.",
+  coffeeTitleIdle: '☕ Coffee break?', coffeeBodyIdle: "It's been 4 hours since your last cup. Time for another?",
+  chTitle: "Today's cheers", chTap: "Tap to see today's cheers and achievements",
+  chNames: { bigEater: 'Feast champion', eatWell: 'Eating well', water: 'Well hydrated', coffee: 'Coffee powerhouse', control: 'Diet under total control' },
+  chBody: {
+    bigEater: (v: Record<string, string>) => `You polished off ${v.k} kcal today, ${v.over} kcal over your goal. Good food is a joy – let's balance it out tomorrow!`,
+    eatWell: (v: Record<string, string>) => `All main meals, energy on target, balanced nutrients – ${v.score} points. Your body thanks you!`,
+    water: (v: Record<string, string>) => `${v.ml} ml down, ${v.goal} ml goal reached. Fresh and focused!`,
+    coffee: (v: Record<string, string>) => `${v.cups} cups of coffee today (~${v.mg} mg caffeine). Wide awake! Just stay under 400 mg.`,
+    control: (v: Record<string, string>) => `${v.days} days in a row on your calorie goal with all 3 meals. Amazing discipline, keep it going!`,
+  },
+  chFeast: '😋 What an appetite!', chCheers: ['Awesome!', 'Brilliant!', 'Keep it up!', 'Great job!', 'So proud of you!'],
+  chEmpty: 'No achievements yet today', chEmptyHint: (goal: string) => `Log all 3 main meals, stay close to your calorie goal or drink ${goal} ml of water to earn a cheer!`,
 };
 
 export type Lang = 'vi' | 'en';

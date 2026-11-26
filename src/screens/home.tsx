@@ -2,6 +2,7 @@ import { ActivityIndicator, Image, Pressable, View } from 'react-native';
 
 import { itemName, fmtDate, mealName } from '@/lib/backup';
 import { CAFFEINE_MAX, COFFEE_ICON, COFFEE_KINDS, coffeeDay } from '@/lib/coffee';
+import { cheersFor } from '@/lib/cheers';
 import { compareDays, type DayScore } from '@/lib/compare';
 import { addDays, cloneItem, dayMeals, dayTotals, guessMeal, macroSplit, macroTargets, mealTot, showExample, streak, targetOn } from '@/lib/core';
 import { remindersSupported } from '@/lib/water';
@@ -10,14 +11,21 @@ import { Btn, Card, GeminiBadge, Icon, Ring, Row, T, XBtn } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
 export function Header() {
-  const { data } = useApp();
-  const t = useT(), c = useColors(), n = streak(data);
+  const { data, today } = useApp();
+  const t = useT(), c = useColors(), n = streak(data), cheers = cheersFor(data, today).length;
   return (
     <Row between>
-      <View>
-        <T h={1}>{t.appName}</T>
+      <Pressable accessibilityRole="button" accessibilityHint={t.chTap} onPress={() => openSheet('cheers')} hitSlop={6}>
+        <Row style={{ gap: 6 }}>
+          <T h={1}>{t.appName}</T>
+          {cheers > 0 && (
+            <View style={{ paddingHorizontal: 7, paddingVertical: 2, borderRadius: 999, backgroundColor: c.accentSoft }}>
+              <T style={{ fontSize: 12, fontWeight: '700', color: c.accent }}>{`🎉 ${cheers}`}</T>
+            </View>
+          )}
+        </Row>
         <T small muted>{t.authorLbl}: Tran Hong Quan</T>
-      </View>
+      </Pressable>
       <View accessibilityLabel={t.streakT(n)} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, backgroundColor: c.warnSoft }}>
         <Icon name="flame" size={16} color={c.warn} />
         <T bold style={{ color: c.warn, fontSize: 14 }}>{n}</T>

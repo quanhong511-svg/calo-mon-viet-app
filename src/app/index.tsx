@@ -32,7 +32,7 @@ export default function App() {
   useEffect(() => {
     const nag = setTimeout(backupNag, 1500);
     setupNotifications().then(() => rescheduleWater(1000));
-    const sub = AppState.addEventListener('change', (st) => { if (st === 'active') { checkDay(); rescheduleWater(); } else if (st === 'background') rescheduleWater(0); }); // nhắc cà phê "sau 4 giờ" tính từ lần dùng app gần nhất
+    const sub = AppState.addEventListener('change', (st) => { if (st === 'active') { checkDay(); rescheduleWater(); } });
     const iv = setInterval(checkDay, 60000);
     return () => { clearTimeout(nag); sub.remove(); clearInterval(iv); };
   }, []);
