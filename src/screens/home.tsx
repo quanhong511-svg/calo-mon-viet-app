@@ -114,7 +114,7 @@ export default function Home() {
         <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <Icon name="sparkle" size={22} color={c.accent} />
           <View style={{ flex: 1, gap: 2 }}>
-            <T bold>{t.adEntry}</T>
+            <T bold>{t.adEntry.replace(/^✨ /, '')}</T>
             <T muted style={{ fontSize: 12 }}>{t.adEntryD}</T>
           </View>
           <T muted style={{ fontSize: 22 }}>›</T>

@@ -7,7 +7,7 @@ import QRCode from 'react-native-qrcode-svg';
 
 import { fmtDate } from '@/lib/backup';
 import { captureAndShare } from '@/lib/share-image';
-import { cardStats, encodeCard, myCard, NICK_MAX, rankAll, type FriendCard, type Ranked } from '@/lib/friend';
+import { cardStats, decodeCard, encodeCard, myCard, NICK_MAX, rankAll, type FriendCard, type Ranked } from '@/lib/friend';
 import { removeFriend, setFriendCode, setNick, toast, useApp, useT } from '@/state/store';
 import { Btn, inputStyle, Note, Row, Seg, T } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
@@ -57,12 +57,16 @@ function MyCode() {
 }
 
 function Scan({ onDone }: { onDone: (nick: string) => void }) {
+  const { nick } = useApp();
   const t = useT(), c = useColors();
   const [perm, ask] = useCameraPermissions();
   const [txt, setTxt] = useState('');
   const [bad, setBad] = useState(false);
   const [busy, setBusy] = useState(false);
   const accept = (s: string) => {
+    // không thêm mã của chính mình (cùng biệt danh) vào bảng xếp hạng
+    const own = decodeCard(s);
+    if (own && nick.trim() && own.n.trim().toLowerCase() === nick.trim().toLowerCase()) { toast(t.frSelf); return false; }
     const card = setFriendCode(s);
     if (card) { setBad(false); onDone(card.n); return true; }
     setBad(true); return false;
@@ -213,7 +217,7 @@ function Ranking({ onOpen }: { onOpen: (nick: string) => void }) {
       {!img ? <Btn full kind="pri" label={t.frMakeImg} onPress={() => setImg(true)} /> : (
         <>
           <View style={{ alignSelf: 'center', borderRadius: 12, overflow: 'hidden' }}>
-            <View ref={shot} collapsable={false}><ShareImage list={list} from={list[0].card.days[0].d} to={today} /></View>
+            <View ref={shot} collapsable={false}><ShareImage list={list} from={me.days[0].d} to={today} /></View>
           </View>
           <T small muted style={{ textAlign: 'center' }}>{t.frImgHint}</T>
           <Btn full kind="pri" label={t.frShareImg} onPress={share} />
