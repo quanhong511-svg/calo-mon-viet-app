@@ -376,6 +376,17 @@ function AdviceSheet() {
           <T muted style={{ fontSize: 11 }}>{`${t.adAt(when)}${advice.prov ? ` · ${advice.prov}` : ''}`}</T>
         </View>
       )}
+      {!!advice.text && !advice.busy && (
+        <Pressable accessibilityRole="button" onPress={() => openSheet('cheers')}
+          style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 14, backgroundColor: c.accentSoft, opacity: pressed ? 0.8 : 1 })}>
+          <T style={{ fontSize: 34 }}>😊</T>
+          <View style={{ flex: 1 }}>
+            <T bold style={{ color: c.accent }}>{t.adCheers}</T>
+            <T muted style={{ fontSize: 12 }}>{t.adCheersD}</T>
+          </View>
+          <T style={{ fontSize: 22, color: c.accent }}>›</T>
+        </Pressable>
+      )}
     </>
   );
 }

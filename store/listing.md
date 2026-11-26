@@ -23,7 +23,7 @@ Calo Món Việt giúp bạn đếm calo cho bữa ăn hằng ngày, được l�
 Chụp hoặc chọn ảnh món ăn, ứng dụng nhận diện món và ước tính calo, đạm, tinh bột, chất béo. Dùng Google Gemini miễn phí, Claude hoặc ChatGPT bằng khoá API của bạn, hoặc tự nhập mô tả kiểu "phở bò tô lớn, trà đá".
 
 ✨ TƯ VẤN DINH DƯỠNG BẰNG AI
-AI xem 7 ngày ăn uống gần nhất và nhận xét: đủ năng lượng chưa, đủ chất chưa, nên thêm món gì. Nội dung chỉ mang tính chất tham khảo, không thay thế tư vấn y tế.
+AI xem 3 ngày ăn uống gần nhất và nhận xét: đủ năng lượng chưa, đủ chất chưa, nên thêm món gì. Nội dung chỉ mang tính chất tham khảo, không thay thế tư vấn y tế.
 
 🍜 BẢNG MÓN VIỆT SẴN CÓ
 Không có mạng vẫn ghi được: chọn món trong bảng, chỉnh số gram, ứng dụng tự tính dinh dưỡng.

@@ -1,12 +1,12 @@
-// Tư vấn dinh dưỡng bằng AI: tóm tắt 7 ngày ăn uống gần nhất thành câu hỏi gửi cho dịch vụ AI.
+// Tư vấn dinh dưỡng bằng AI: tóm tắt 3 ngày ăn uống gần nhất thành câu hỏi gửi cho dịch vụ AI.
 import { itemName, mealName } from './backup';
 import { coffeeDay } from './coffee';
 import { addDays, macroTargets, MEAL_ORDER, mealTot, sum, targetOn, type Data } from './core';
 import type { Lang, Strings } from './i18n';
 
-const DAYS = 7;
+const DAYS = 3;
 
-/** Số ngày có ghi bữa trong 7 ngày tính đến `today`. */
+/** Số ngày có ghi bữa trong 3 ngày tính đến `today`. */
 export const adviceDays = (data: Data, today: string) =>
   Array.from({ length: DAYS }, (_, k) => addDays(today, -k)).filter((d) => (data.days[d] || []).some((m) => !m.example));
 

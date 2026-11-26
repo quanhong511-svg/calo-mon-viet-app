@@ -79,12 +79,12 @@ const vi = {
   chFeast: '😋 Ngon miệng ghê!', chCheers: ['Tuyệt vời!', 'Quá đỉnh!', 'Giữ vững phong độ nhé!', 'Bạn làm tốt lắm!', 'Tự hào về bạn!'],
   chEmpty: 'Hôm nay chưa có thành tích nào', chEmptyHint: (goal: string) => `Thử ghi đủ 3 bữa chính, ăn sát mục tiêu calo hoặc uống đủ ${goal} ml nước để nhận lời chúc nhé!`,
   errRefusal: 'AI từ chối yêu cầu này. Hãy thử lại hoặc đổi dịch vụ AI.',
-  adTitle: 'Tư vấn dinh dưỡng AI', adEntry: '✨ Tư vấn dinh dưỡng bằng AI', adEntryD: 'AI xem 7 ngày ăn uống gần nhất: đủ năng lượng chưa, đủ chất chưa, nên ăn thêm gì.',
+  adTitle: 'Tư vấn dinh dưỡng AI', adEntry: '✨ Tư vấn dinh dưỡng bằng AI', adEntryD: 'AI xem 3 ngày ăn uống gần nhất: đủ năng lượng chưa, đủ chất chưa, nên ăn thêm gì.',
   adDisclaimer: '⚠️ Nội dung do AI tạo ra, chỉ mang tính chất tham khảo, không phải lời khuyên y tế. Hãy hỏi bác sĩ hoặc chuyên gia dinh dưỡng trước khi thay đổi chế độ ăn, nhất là khi bạn đang có bệnh lý, mang thai hoặc dùng thuốc.',
-  adSend: (prov: string) => `Tóm tắt ăn uống 7 ngày (món, gam, calo, nước, cà phê – không kèm ảnh) sẽ được gửi tới ${prov} bằng khoá API của bạn.`,
-  adRun: 'Phân tích 7 ngày gần nhất', adAgain: 'Phân tích lại', adBusy: 'AI đang phân tích…', adAt: (s: string) => `Phân tích lúc ${s}`,
+  adSend: (prov: string) => `Tóm tắt ăn uống 3 ngày (món, gam, calo, nước, cà phê – không kèm ảnh) sẽ được gửi tới ${prov} bằng khoá API của bạn.`,
+  adRun: 'Phân tích 3 ngày gần nhất', adAgain: 'Phân tích lại', adBusy: 'AI đang phân tích…', adAt: (s: string) => `Phân tích lúc ${s}`,
   adNeedKey: 'Cần chọn Gemini, Claude hoặc ChatGPT và nhập khoá API trong Cài đặt → Nhận diện ảnh tự động.', adGoSettings: 'Mở Cài đặt',
-  adNoData: 'Chưa có bữa ăn nào trong 7 ngày gần nhất để phân tích.',
+  adCheers: 'Xem lời chúc hôm nay', adCheersD: 'Thành tích và lời chúc của bạn hôm nay', adNoData: 'Chưa có bữa ăn nào trong 3 ngày gần nhất để phân tích.',
 };
 
 export type Strings = typeof vi;
@@ -169,12 +169,12 @@ const en: Strings = {
   chFeast: '😋 What an appetite!', chCheers: ['Awesome!', 'Brilliant!', 'Keep it up!', 'Great job!', 'So proud of you!'],
   chEmpty: 'No achievements yet today', chEmptyHint: (goal: string) => `Log all 3 main meals, stay close to your calorie goal or drink ${goal} ml of water to earn a cheer!`,
   errRefusal: 'The AI declined this request. Try again or switch AI service.',
-  adTitle: 'AI nutrition advice', adEntry: '✨ AI nutrition advice', adEntryD: 'AI reviews your last 7 days: enough energy? balanced nutrients? what to add?',
+  adTitle: 'AI nutrition advice', adEntry: '✨ AI nutrition advice', adEntryD: 'AI reviews your last 3 days: enough energy? balanced nutrients? what to add?',
   adDisclaimer: '⚠️ AI-generated content for reference only, not medical advice. Talk to a doctor or dietitian before changing your diet, especially if you have a health condition, are pregnant or take medication.',
-  adSend: (prov: string) => `A summary of your last 7 days (dishes, grams, calories, water, coffee – no photos) will be sent to ${prov} using your API key.`,
-  adRun: 'Analyze the last 7 days', adAgain: 'Analyze again', adBusy: 'AI is analyzing…', adAt: (s: string) => `Analyzed at ${s}`,
+  adSend: (prov: string) => `A summary of your last 3 days (dishes, grams, calories, water, coffee – no photos) will be sent to ${prov} using your API key.`,
+  adRun: 'Analyze the last 3 days', adAgain: 'Analyze again', adBusy: 'AI is analyzing…', adAt: (s: string) => `Analyzed at ${s}`,
   adNeedKey: 'Choose Gemini, Claude or ChatGPT and enter an API key in Settings → Automatic photo recognition.', adGoSettings: 'Open Settings',
-  adNoData: 'No meals in the last 7 days to analyze.',
+  adCheers: "See today's cheers", adCheersD: 'Your achievements and cheers for today', adNoData: 'No meals in the last 3 days to analyze.',
 };
 
 export type Lang = 'vi' | 'en';
