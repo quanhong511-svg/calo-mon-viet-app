@@ -5,7 +5,7 @@ import { CAFFEINE_MAX, COFFEE_ICON, COFFEE_KINDS, coffeeDay } from '@/lib/coffee
 import { compareDays, type DayScore } from '@/lib/compare';
 import { addDays, cloneItem, dayMeals, dayTotals, guessMeal, macroSplit, macroTargets, mealTot, showExample, streak, targetOn } from '@/lib/core';
 import { remindersSupported } from '@/lib/water';
-import { addCoffee, addWater, cancelPhotoAI, mealRemindOf, openReview, openSheet, setMealRemind, shiftDay, useApp, useT, waterCfgOf } from '@/state/store';
+import { addCoffee, addWater, toggleCompare, cancelPhotoAI, mealRemindOf, openReview, openSheet, setMealRemind, shiftDay, useApp, useT, waterCfgOf } from '@/state/store';
 import { Btn, Card, GeminiBadge, Icon, Ring, Row, T, XBtn } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
@@ -180,7 +180,7 @@ function WaterCard() {
 }
 
 function CompareCard() {
-  const { data, viewDate, lang, today: td } = useApp();
+  const { data, viewDate, lang, today: td, cmpHidden } = useApp();
   const t = useT(), c = useColors();
   const cmp = compareDays(data, viewDate);
   if (!cmp) return null;
@@ -218,7 +218,15 @@ function CompareCard() {
 
   return (
     <Card style={{ gap: 12 }}>
-      <Row style={{ gap: 6 }}><Icon name="chart" size={20} color={c.accent} /><T h={3}>{t.cmpTitle}</T></Row>
+      <Pressable accessibilityRole="button" accessibilityState={{ expanded: !cmpHidden }} accessibilityLabel={`${t.cmpTitle}, ${cmpHidden ? t.cmpShow : t.cmpHide}`}
+        onPress={toggleCompare} hitSlop={8} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <Icon name="chart" size={20} color={c.accent} /><T h={3} style={{ flex: 1 }}>{t.cmpTitle}</T>
+        <T small muted>{cmpHidden ? t.cmpShow : t.cmpHide}</T>
+        <T muted style={{ fontSize: 16, transform: [{ rotate: cmpHidden ? '0deg' : '180deg' }] }}>⌄</T>
+      </Pressable>
+      {cmpHidden ? (
+        <T small muted numberOfLines={1}>{`${lbl(viewDate)}: ${cur.logged ? `${cur.score} ${t.cmpPts}` : t.cmpNone}${best && best.d !== viewDate ? ` · ★ ${lbl(best.d)} ${best.score} ${t.cmpPts}` : ''}`}</T>
+      ) : (<>
       <View style={{ flexDirection: 'row', gap: 8 }}>
         {days.map((x) => <DayCol key={x.d} x={x} label={lbl(x.d)} best={best?.d === x.d} col={scoreCol(x.score)} r0={r0} />)}
       </View>
@@ -234,6 +242,7 @@ function CompareCard() {
       {remindersSupported && !mealRemindOf(data).on && (
         <Btn small label={t.mrEnable} onPress={() => setMealRemind({ on: true })} />
       )}
+      </>)}
     </Card>
   );
 }

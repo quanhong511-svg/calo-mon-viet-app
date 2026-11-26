@@ -30,6 +30,8 @@ type State = {
   lang: Lang; data: Data; viewDate: string; tab: Tab; sheet: SheetName | null; rv: Review | null; listTarget: 'review' | null;
   pending: { photo: string } | null; photo: Photo | null; cfg: AiCfg; prov: ProvId; aiMsg: string | null; gptOpen: boolean; local: Alt[] | null;
   toast: { msg: string; onTap?: () => void; id: number } | null; range: number; netMeta: NetMeta; busy: boolean;
+  /** thu gọn thẻ So sánh 3 ngày (nhớ giữa các lần mở app) */
+  cmpHidden: boolean;
   /** ngày hôm nay, đổi lúc qua nửa đêm (để màn hình vẽ lại) */
   today: string;
 };
@@ -43,7 +45,7 @@ let s: State = {
   data: store.get<Data>('calo-data') || newData(),
   viewDate: todayIso(), tab: 'home', sheet: null, rv: null, listTarget: null, pending: null, photo: null,
   cfg: cfg0, prov: cfg0.prov && PROV[cfg0.prov] ? cfg0.prov : 'none', aiMsg: null, gptOpen: false, local: null,
-  toast: null, range: [7, 14, 30, 90].includes(store.get<number>('range') || 0) ? store.get<number>('range')! : 7, netMeta: null, busy: false,
+  toast: null, range: [7, 14, 30, 90].includes(store.get<number>('range') || 0) ? store.get<number>('range')! : 7, netMeta: null, busy: false, cmpHidden: store.get<boolean>('cmp-hidden') === true,
   today: todayIso(),
 };
 
@@ -76,6 +78,7 @@ export function toast(msg: string, onTap?: () => void, ms = 3200) {
 }
 export function setLang(l: Lang) { store.set('lang', l); set({ lang: l }); rescheduleWater(); }
 export function setRange(r: number) { store.set('range', r); set({ range: r }); }
+export function toggleCompare() { const v = !s.cmpHidden; store.set('cmp-hidden', v); set({ cmpHidden: v }); }
 export function saveCfg(cfg: AiCfg) { store.set('ai-cfg', cfg); set({ cfg, prov: cfg.prov && PROV[cfg.prov] ? cfg.prov : s.prov }); }
 export function setProv(p: ProvId) { saveCfg({ ...s.cfg, prov: p }); set({ prov: p }); }
 export function setProvField(p: ProvId, k: 'key' | 'model' | 'url', v: string) { saveCfg({ ...s.cfg, [p]: { ...(s.cfg[p] || {}), [k]: v } }); }
