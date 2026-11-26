@@ -9,7 +9,7 @@ import { PROV, type ProvCfg, type ProvId } from '@/lib/ai';
 import { backup, fmtDate, mergeBackup, toCsv, toText, validTarget } from '@/lib/backup';
 import { setTarget, todayIso, pad } from '@/lib/core';
 import { getFoodNet } from '@/lib/photo';
-import { commit, get, saveCfg, set, setLang, setProv, setWaterCfg, toast, useApp, useT, waterCfg, waterCfgOf } from '@/state/store';
+import { commit, get, mealRemindOf, saveCfg, set, setLang, setMealRemind, setProv, setWaterCfg, toast, useApp, useT, waterCfg, waterCfgOf } from '@/state/store';
 import { remindersSupported, slots } from '@/lib/water';
 import { Btn, Card, Icon, inputStyle, Note, Row, Seg, T } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
@@ -108,6 +108,7 @@ export default function Settings() {
       </Card>
 
       <WaterSettings />
+      <MealRemindSettings />
 
       <Card style={{ gap: 12 }}>
         <T h={2}>{t.aiTitle}</T>
@@ -192,6 +193,26 @@ function Stepper({ value, label, onChange, min, max }: { value: number; label: s
       <T style={{ width: 58, textAlign: 'center' }}>{`${value}:00`}</T>
       <Pressable accessibilityLabel={`${label} +`} disabled={value >= max} onPress={() => onChange(value + 1)} style={[b, { opacity: value >= max ? 0.4 : 1 }]}><T>+</T></Pressable>
     </View>
+  );
+}
+
+function MealRemindSettings() {
+  const { data } = useApp();
+  const t = useT(), c = useColors(), m = mealRemindOf(data);
+  return (
+    <Card style={{ gap: 12 }}>
+      <Row style={{ gap: 6 }}><Icon name="chart" size={20} color={c.accent} /><T h={2}>{t.mrHead}</T></Row>
+      <Row between><T>{t.mrSetting}</T>
+        <Seg items={[{ v: 'off', label: t.waterOff }, { v: 'on', label: t.waterOn }]} value={m.on ? 'on' : 'off'} onChange={(v) => setMealRemind({ on: v === 'on' })} />
+      </Row>
+      {!remindersSupported && <Note>{t.waterWeb}</Note>}
+      {m.on && (
+        <>
+          <Row between><T>{t.mrAt}</T><Stepper value={m.at} label={t.mrAt} min={17} max={23} onChange={(v) => setMealRemind({ at: v })} /></Row>
+          <T small muted>{t.mrNote}</T>
+        </>
+      )}
+    </Card>
   );
 }
 

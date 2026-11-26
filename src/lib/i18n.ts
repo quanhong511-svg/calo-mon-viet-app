@@ -43,6 +43,12 @@ const vi = {
   cmpVsBest: (more: boolean, n: string, day: string) => `${more ? 'Nhiều' : 'Ít'} hơn ${day} ${n} kcal`,
   cmpMacro: (name: string, low: boolean) => `${name} đang ${low ? 'thấp' : 'cao'} so với tỉ lệ khuyến nghị`,
   cmpGood: 'Đang đi đúng hướng, giữ nhịp này nhé!',
+  mrTitle: '🍽️ Tổng kết bữa ăn hôm nay', mrEmpty: 'Hôm nay bạn chưa ghi bữa nào. Ghi lại để so sánh với 2 ngày trước nhé!',
+  mrGeneric: 'Đã ghi đủ bữa sáng, trưa, tối chưa? Mở app để xem điểm hôm nay so với 2 ngày trước.',
+  mrMissing: (list: string) => `Chưa ghi: ${list}.`, mrScore: (s: number, k: string, tgt: string) => `Hôm nay ${s} điểm (${k}/${tgt} kcal)`,
+  mrBestToday: '— tốt nhất trong 3 ngày 🎉', mrBestOther: (day: string, s: number) => `— ${day} tốt hơn (${s} điểm).`,
+  mrHead: 'Tổng kết bữa ăn', mrSetting: 'Nhắc tổng kết mỗi tối', mrAt: 'Giờ nhắc', mrNote: 'Mỗi tối một thông báo: bữa chính còn thiếu và điểm hôm nay so với 2 ngày trước. Mở app ít nhất 7 ngày một lần để lịch nhắc tiếp tục.',
+  mrEnable: '🔔 Nhắc mỗi tối', mrOnToast: (h: number) => `Sẽ nhắc tổng kết lúc ${h}:00 mỗi tối`,
 };
 
 export type Strings = typeof vi;
@@ -91,6 +97,12 @@ const en: Strings = {
   cmpVsBest: (more: boolean, n: string, day: string) => `${n} kcal ${more ? 'more' : 'less'} than ${day}`,
   cmpMacro: (name: string, low: boolean) => `${name} is ${low ? 'low' : 'high'} vs. the recommended split`,
   cmpGood: "You're on track, keep it up!",
+  mrTitle: "🍽️ Today's meal check-in", mrEmpty: "You haven't logged any meals today. Log them to compare with the past 2 days!",
+  mrGeneric: 'Logged breakfast, lunch and dinner? Open the app to see today\'s score vs. the past 2 days.',
+  mrMissing: (list: string) => `Not logged: ${list}.`, mrScore: (s: number, k: string, tgt: string) => `Today: ${s} pts (${k}/${tgt} kcal)`,
+  mrBestToday: '— best of the 3 days 🎉', mrBestOther: (day: string, s: number) => `— ${day} was better (${s} pts).`,
+  mrHead: 'Meal check-in', mrSetting: 'Evening reminder', mrAt: 'Remind at', mrNote: 'One notification each evening: main meals not yet logged and today\'s score vs. the past 2 days. Open the app at least every 7 days to keep it going.',
+  mrEnable: '🔔 Remind me nightly', mrOnToast: (h: number) => `Check-in reminder set for ${h}:00 every evening`,
 };
 
 export type Lang = 'vi' | 'en';

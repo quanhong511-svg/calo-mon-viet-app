@@ -14,6 +14,7 @@ import { parseText } from '@/lib/parse-text';
 import { trendReportHtml } from '@/lib/report';
 import { getFoodNet, modelUsable, prepPhoto, recognizeLocal, type Photo } from '@/lib/photo';
 import { store } from '@/lib/storage';
+import { MEAL_REMIND_DEFAULT, scheduleMealRemind, type MealRemindCfg } from '@/lib/meal-remind';
 import { ensurePermission, remindersSupported, scheduleWater, WATER_DEFAULT, type WaterCfg } from '@/lib/water';
 
 export type SheetName = 'add' | 'text' | 'list' | 'ai' | 'review';
@@ -62,6 +63,7 @@ export function commit(mut: (d: Data) => void): boolean {
   mut(d);
   const ok = store.set('calo-data', d);
   set({ data: d });
+  rescheduleWater(); // nội dung tổng kết bữa ăn hôm nay theo dữ liệu mới
   if (!ok) toast(tr().storeFull, undefined, 9000);
   return ok;
 }
@@ -318,11 +320,15 @@ export const waterCfg = (): WaterCfg => waterCfgOf(s.data);
 export const waterOn = (d: string) => s.data.water?.[d] || 0;
 
 let waterTimer: ReturnType<typeof setTimeout> | undefined;
-/** Dựng lại lịch nhắc (gộp nhiều lần gọi liên tiếp thành một). */
+/** Dựng lại lịch nhắc uống nước và tổng kết bữa ăn (gộp nhiều lần gọi liên tiếp thành một). */
 export function rescheduleWater(delay = 600) {
   if (!remindersSupported) return;
   clearTimeout(waterTimer);
-  waterTimer = setTimeout(() => { scheduleWater(waterCfg(), waterOn(todayIso()), tr(), s.lang).catch(() => {}); }, delay);
+  waterTimer = setTimeout(() => {
+    // chạy lần lượt: mỗi hàm tự huỷ lịch cũ của mình rồi mới đặt lịch mới
+    scheduleWater(waterCfg(), waterOn(todayIso()), tr(), s.lang).catch(() => {})
+      .then(() => scheduleMealRemind(mealRemindOf(s.data), s.data, tr(), s.lang)).catch(() => {});
+  }, delay);
 }
 export function addWater(ml: number) {
   const day = s.viewDate, before = waterOn(day), goal = waterCfg().goal;
@@ -335,5 +341,14 @@ export function addWater(ml: number) {
 export async function setWaterCfg(p: Partial<WaterCfg>) {
   if (p.on && !(await ensurePermission())) { toast(tr().waterDenied, undefined, 6000); p = { ...p, on: false }; }
   commit((d) => { d.waterCfg = { ...WATER_DEFAULT, ...(d.waterCfg || {}), ...p }; });
+  rescheduleWater(0);
+}
+
+// ---------- tổng kết bữa ăn mỗi tối ----------
+export const mealRemindOf = (d: Data): MealRemindCfg => ({ ...MEAL_REMIND_DEFAULT, ...(d.mealRemind || {}) });
+export async function setMealRemind(p: Partial<MealRemindCfg>) {
+  if (p.on && !(await ensurePermission())) { toast(tr().waterDenied, undefined, 6000); return; }
+  commit((d) => { d.mealRemind = { ...MEAL_REMIND_DEFAULT, ...(d.mealRemind || {}), ...p }; });
+  if (p.on) toast(tr().mrOnToast(mealRemindOf(s.data).at));
   rescheduleWater(0);
 }

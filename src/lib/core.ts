@@ -15,6 +15,8 @@ export type Data = {
   /** ml nước đã uống theo ngày */
   water?: Record<string, number>;
   waterCfg?: { goal: number; on: boolean; every: number; from: number; to: number };
+  /** thông báo tổng kết bữa ăn mỗi tối, at = giờ (17–23) */
+  mealRemind?: { on: boolean; at: number };
 };
 export type Totals = { k: number; p: number; c: number; f: number };
 

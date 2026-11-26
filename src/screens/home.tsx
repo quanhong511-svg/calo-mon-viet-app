@@ -3,7 +3,8 @@ import { ActivityIndicator, Image, Pressable, View } from 'react-native';
 import { itemName, fmtDate, mealName } from '@/lib/backup';
 import { compareDays, type DayScore } from '@/lib/compare';
 import { addDays, cloneItem, dayMeals, dayTotals, guessMeal, mealTot, showExample, streak, targetOn } from '@/lib/core';
-import { addWater, cancelPhotoAI, openReview, shiftDay, useApp, useT, waterCfgOf } from '@/state/store';
+import { remindersSupported } from '@/lib/water';
+import { addWater, cancelPhotoAI, mealRemindOf, openReview, setMealRemind, shiftDay, useApp, useT, waterCfgOf } from '@/state/store';
 import { Btn, Card, GeminiBadge, Icon, Ring, Row, T, XBtn } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
@@ -197,6 +198,9 @@ function CompareCard() {
         ))}
       </View>
       <T muted style={{ fontSize: 11 }}>{t.cmpHint}</T>
+      {remindersSupported && !mealRemindOf(data).on && (
+        <Btn small label={t.mrEnable} onPress={() => setMealRemind({ on: true })} />
+      )}
     </Card>
   );
 }
