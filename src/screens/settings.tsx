@@ -202,11 +202,12 @@ function MealRemindSettings() {
   return (
     <Card style={{ gap: 12 }}>
       <Row style={{ gap: 6 }}><Icon name="chart" size={20} color={c.accent} /><T h={2}>{t.mrHead}</T></Row>
-      <Row between><T>{t.mrSetting}</T>
-        <Seg items={[{ v: 'off', label: t.waterOff }, { v: 'on', label: t.waterOn }]} value={m.on ? 'on' : 'off'} onChange={(v) => setMealRemind({ on: v === 'on' })} />
-      </Row>
-      {!remindersSupported && <Note>{t.waterWeb}</Note>}
-      {m.on && (
+      {remindersSupported ? (
+        <Row between><T>{t.mrSetting}</T>
+          <Seg items={[{ v: 'off', label: t.waterOff }, { v: 'on', label: t.waterOn }]} value={m.on ? 'on' : 'off'} onChange={(v) => setMealRemind({ on: v === 'on' })} />
+        </Row>
+      ) : <T small muted>{`${t.mrSetting}: ${t.waterWeb.toLowerCase()}`}</T>}
+      {remindersSupported && m.on && (
         <>
           <Row between><T>{t.mrAt}</T><Stepper value={m.at} label={t.mrAt} min={17} max={23} onChange={(v) => setMealRemind({ at: v })} /></Row>
           <T small muted>{t.mrNote}</T>
@@ -229,11 +230,12 @@ function WaterSettings() {
       <Row between><T style={{ flex: 1 }}>{t.waterGoal}</T>
         <NumInput value={w.goal} onCommit={applyGoal} label={t.waterGoal} />
       </Row>
-      <Row between><T>{t.waterRemind}</T>
-        <Seg items={[{ v: 'off', label: t.waterOff }, { v: 'on', label: t.waterOn }]} value={w.on ? 'on' : 'off'} onChange={(v) => setWaterCfg({ on: v === 'on' })} />
-      </Row>
-      {!remindersSupported && <Note>{t.waterWeb}</Note>}
-      {w.on && (
+      {remindersSupported ? (
+        <Row between><T>{t.waterRemind}</T>
+          <Seg items={[{ v: 'off', label: t.waterOff }, { v: 'on', label: t.waterOn }]} value={w.on ? 'on' : 'off'} onChange={(v) => setWaterCfg({ on: v === 'on' })} />
+        </Row>
+      ) : <T small muted>{`${t.waterRemind}: ${t.waterWeb.toLowerCase()}`}</T>}
+      {remindersSupported && w.on && (
         <>
           <Row between><T>{t.waterEvery}</T>
             <Seg small items={[60, 90, 120, 180].map((v) => ({ v, label: `${(v / 60).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN')} ${t.hours}` }))} value={w.every} onChange={(v) => setWaterCfg({ every: v })} />
