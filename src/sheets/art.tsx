@@ -272,3 +272,32 @@ export function ArtSheet() {
     </>
   );
 }
+
+/** Ảnh món ở màn kiểm tra bữa: phủ tên món, kcal, khối lượng, đạm/tinh bột/béo, hashtag và tên app; chạm để mở màn filter & chia sẻ. */
+export function PhotoCard({ thumb, items, servings, onPress }: { thumb: string; items: { id: string | null; name: string; custom?: boolean; grams: number; kcal: number; p: number; c: number; f: number }[]; servings: number; onPress: () => void }) {
+  const { lang, photo } = useApp();
+  const t = useT();
+  // ảnh gốc nét hơn nếu là ảnh vừa chọn ở lượt này
+  const uri = photo && photo.thumb === thumb ? photo.uri : thumb;
+  const r0 = (n: number) => Math.round(n).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN');
+  const names = items.map((it) => itemName(lang, it));
+  const k = (key: 'kcal' | 'grams' | 'p' | 'c' | 'f') => sum(items, key) * servings;
+  const shadow = { textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 6, textShadowOffset: { width: 0, height: 1 } };
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityHint={t.arBtn} style={{ width: '100%', aspectRatio: 1.15, borderRadius: 14, overflow: 'hidden', backgroundColor: '#222' }}>
+      <Image source={{ uri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+      <Shade to={0.82} />
+      {items.length > 0 && (
+        <View style={{ position: 'absolute', left: 14, right: 14, bottom: 12, gap: 3 }}>
+          <T numberOfLines={2} style={[{ color: '#fff', fontSize: 20, fontWeight: '800' }, shadow]}>{names.join(', ')}</T>
+          <T style={{ color: '#fff', fontSize: 12, opacity: 0.93 }}>{`${r0(k('kcal'))} kcal · ${r0(k('grams'))} g · ${t.protein} ${r0(k('p'))}g · ${t.carb} ${r0(k('c'))}g · ${t.fat} ${r0(k('f'))}g`}</T>
+          <T numberOfLines={2} style={{ color: '#9be7c4', fontSize: 11, fontWeight: '600' }}>{defaultTags(names)}</T>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
+            <T style={{ color: 'rgba(255,255,255,0.8)', fontSize: 10 }}>{`🎨 ${t.arTapHint}`}</T>
+            <T style={{ color: '#fff', fontSize: 10, fontWeight: '800' }}>{`🍜 ${APP}`}</T>
+          </View>
+        </View>
+      )}
+    </Pressable>
+  );
+}

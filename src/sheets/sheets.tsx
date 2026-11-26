@@ -6,7 +6,7 @@ import { itemName } from '@/lib/backup';
 import { adviceDays } from '@/lib/advice';
 import { SRC } from '@/lib/ai';
 import { cheersFor } from '@/lib/cheers';
-import { ArtSheet } from '@/sheets/art';
+import { ArtSheet, PhotoCard } from '@/sheets/art';
 import { FriendSheet } from '@/sheets/friend';
 import { macroTargets, MEAL_ORDER, mk, scaleItem, sum, targetOn } from '@/lib/core';
 import { byId, DB } from '@/lib/foods';
@@ -180,7 +180,7 @@ function ReviewSheet() {
 
   return (
     <>
-      {rv.photo && <Image source={{ uri: rv.photo }} style={{ width: '100%', height: 200, borderRadius: 14 }} resizeMode="cover" />}
+      {rv.photo && <PhotoCard thumb={rv.photo} items={rv.items} servings={Number(rv.servings) || 1} onPress={() => openSheet('art')} />}
       {rv.source === 'Gemini' && <GeminiBadge label={t.fromGemini} />}
       {rv.photo && rv.items.length > 0 && <Btn small label={t.arBtn} onPress={() => openSheet('art')} />}
       <Row between>
