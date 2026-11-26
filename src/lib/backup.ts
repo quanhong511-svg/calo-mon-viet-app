@@ -43,7 +43,7 @@ export function toCsv(data: Data, t: Strings, lang: Lang) {
 
 export const backup = (data: Data, lang: Lang) => ({
   app: 'calo-mon-viet', v: 5, exported: new Date().toISOString(), target: data.target, targets: data.targets || null, lang, days: data.days, deleted: data.deleted || {},
-  water: data.water || {}, coffee: data.coffee || {},
+  water: data.water || {}, coffee: data.coffee || {}, macros: data.macros || null,
 });
 
 export const validTarget = (v: unknown) => { const n = Number(v); return n >= 800 && n <= 5000 ? Math.round(n) : null; };
@@ -90,6 +90,11 @@ export function mergeBackup(data: Data, j: any): [number, number] {
   if (j.water && typeof j.water === 'object') for (const [d, v] of Object.entries(j.water)) {
     const ml = Math.round(Number(v));
     if (/^\d{4}-\d{2}-\d{2}$/.test(d) && ml > 0 && ml < 20000 && ml > ((data.water ||= {})[d] || 0)) data.water[d] = ml;
+  }
+  // mục tiêu gam đạm/tinh bột/béo: chỉ lấy khi máy này chưa tự đặt
+  if (!data.macros && j.macros && typeof j.macros === 'object') {
+    const m = { p: Math.round(Number(j.macros.p)), c: Math.round(Number(j.macros.c)), f: Math.round(Number(j.macros.f)) };
+    if ([m.p, m.c, m.f].every((x) => x >= 0 && x <= 1000) && m.p + m.c + m.f > 0) data.macros = m;
   }
   // cà phê: mỗi ngày, mỗi loại giữ số lớn hơn
   if (j.coffee && typeof j.coffee === 'object') for (const [d, v] of Object.entries(j.coffee)) {

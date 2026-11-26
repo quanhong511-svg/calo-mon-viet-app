@@ -180,7 +180,7 @@ function WaterCard() {
 }
 
 function CompareCard() {
-  const { data, viewDate, lang, today: td, cmpHidden } = useApp();
+  const { data, viewDate, lang, today: td, cmpHidden, hour: hr } = useApp();
   const t = useT(), c = useColors();
   const cmp = compareDays(data, viewDate);
   if (!cmp) return null;
@@ -197,7 +197,6 @@ function CompareCard() {
     tips.push(t.cmpBest(lbl(best.d), best.score) + (why ? ` · ${why}` : ''));
   }
   // bữa chính còn thiếu của ngày đang xem; với hôm nay chỉ nhắc bữa đã qua giờ (sáng 10h, trưa 14h, tối 20h)
-  const hr = new Date().getHours();
   const missing = cur.main.map((ok, i) => (!ok && (viewDate !== td || hr >= [10, 14, 20][i]) ? t.meals[i] : null)).filter(Boolean) as string[];
   if (missing.length) tips.push(t.cmpMissing(lbl(viewDate), missing.join(', ').toLowerCase()));
   if (cur.logged) {

@@ -34,6 +34,8 @@ type State = {
   cmpHidden: boolean;
   /** ngày hôm nay, đổi lúc qua nửa đêm (để màn hình vẽ lại) */
   today: string;
+  /** giờ hiện tại (0–23), cập nhật mỗi phút để màn hình vẽ lại khi qua giờ */
+  hour: number;
 };
 
 const deviceLang = (): Lang => {
@@ -46,7 +48,7 @@ let s: State = {
   viewDate: todayIso(), tab: 'home', sheet: null, rv: null, listTarget: null, pending: null, photo: null,
   cfg: cfg0, prov: cfg0.prov && PROV[cfg0.prov] ? cfg0.prov : 'none', aiMsg: null, gptOpen: false, local: null,
   toast: null, range: [7, 14, 30, 90].includes(store.get<number>('range') || 0) ? store.get<number>('range')! : 7, netMeta: null, busy: false, cmpHidden: store.get<boolean>('cmp-hidden') === true,
-  today: todayIso(),
+  today: todayIso(), hour: new Date().getHours(),
 };
 
 const listeners = new Set<() => void>();
@@ -61,6 +63,7 @@ export const useT = (): Strings => STRINGS[useApp().lang];
 
 // ---------- dữ liệu ----------
 /** Sửa dữ liệu trên một bản sao rồi lưu xuống máy. */
+let waterTimer: ReturnType<typeof setTimeout> | undefined; // khai báo trước commit(), vì commit gọi rescheduleWater
 export function commit(mut: (d: Data) => void): boolean {
   const d: Data = JSON.parse(JSON.stringify(s.data));
   mut(d);
@@ -281,6 +284,8 @@ export async function describe(txt: string): Promise<boolean> {
 // ---------- qua ngày & nhắc sao lưu ----------
 let lastToday = todayIso();
 export function checkDay() {
+  const h = new Date().getHours();
+  if (h !== s.hour) set({ hour: h });
   const td = todayIso();
   if (td === lastToday) return;
   set(s.viewDate === lastToday ? { viewDate: td, today: td } : { today: td });
@@ -323,7 +328,6 @@ export const waterCfgOf = (d: Data): WaterCfg => ({ ...WATER_DEFAULT, ...(d.wate
 export const waterCfg = (): WaterCfg => waterCfgOf(s.data);
 export const waterOn = (d: string) => s.data.water?.[d] || 0;
 
-let waterTimer: ReturnType<typeof setTimeout> | undefined;
 /** Dựng lại lịch nhắc uống nước và tổng kết bữa ăn (gộp nhiều lần gọi liên tiếp thành một). */
 export function rescheduleWater(delay = 600) {
   if (!remindersSupported) return;

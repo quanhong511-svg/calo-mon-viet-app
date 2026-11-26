@@ -14,7 +14,7 @@ import { embedBackup, extractBackup, isPdf, logPdfHtml } from '@/lib/log-pdf';
 import { getFoodNet } from '@/lib/photo';
 import { coffeeCfgOf } from '@/lib/coffee';
 import { commit, get, mealRemindOf, openSheet, setCoffeeCfg, saveCfg, set, setLang, setMealRemind, setMealTime, setProv, setWaterCfg, toast, useApp, useT, waterCfg, waterCfgOf } from '@/state/store';
-import { remindersSupported, slots } from '@/lib/water';
+import { remindersSupported, slots, WATER_MAX_PENDING } from '@/lib/water';
 import { Btn, Card, Icon, inputStyle, Note, Row, Seg, T } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
@@ -62,7 +62,7 @@ async function readPickedText(uri: string, b: Uint8Array): Promise<string> {
 }
 
 export default function Settings() {
-  const { data, lang, prov, cfg, netMeta, viewDate } = useApp();
+  const { data, lang, prov, cfg, netMeta, viewDate, today } = useApp();
   const t = useT(), c = useColors();
   const [scope, setScope] = useState<'day' | 'all'>('day');
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
@@ -135,8 +135,8 @@ export default function Settings() {
         </Row>
         <Row between style={{ flexWrap: 'nowrap' }}>
           <View style={{ flex: 1, gap: 2 }}>
-            <T small>{(() => { const m = macroTargets(data, viewDate); return `${t.protein} ${Math.round(m.p)}g · ${t.carb} ${Math.round(m.c)}g · ${t.fat} ${Math.round(m.f)}g`; })()}</T>
-            <T small muted>{(() => { const s = macroSplit(data, viewDate); return `${t.mcSplit(Math.round(s.p * 100), Math.round(s.c * 100), Math.round(s.f * 100))} · ${data.macros ? t.mcCustom : t.mcAuto}`; })()}</T>
+            <T small>{(() => { const m = macroTargets(data, today); return `${t.protein} ${Math.round(m.p)}g · ${t.carb} ${Math.round(m.c)}g · ${t.fat} ${Math.round(m.f)}g`; })()}</T>
+            <T small muted>{(() => { const s = macroSplit(data, today); return `${t.mcSplit(Math.round(s.p * 100), Math.round(s.c * 100), Math.round(s.f * 100))} · ${data.macros ? t.mcCustom : t.mcAuto}`; })()}</T>
           </View>
           <Btn small label={t.mcEdit} onPress={() => openSheet('macros')} />
         </Row>
@@ -333,7 +333,7 @@ function WaterSettings() {
               <Stepper value={w.to} label={t.waterTo} min={w.from + 1} max={23} onChange={(v) => setWaterCfg({ to: v })} />
             </Row>
           </Row>
-          <T small muted>{t.waterNote(slots(w).length)}</T>
+          <T small muted>{t.waterNote(slots(w).length, Math.max(1, Math.min(5, Math.floor(WATER_MAX_PENDING / Math.max(1, slots(w).length)))))}</T>
         </>
       )}
     </Card>

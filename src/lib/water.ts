@@ -16,7 +16,8 @@ export const remindersSupported = Platform.OS !== 'web';
 
 const PREFIX = 'water-';
 const DAYS_AHEAD = 5; // iOS giữ tối đa 64 thông báo chờ
-const MAX_PENDING = 36; // chừa chỗ cho nhắc bữa ăn (iOS giữ tối đa 64)
+export const WATER_MAX_PENDING = 36; // chừa chỗ cho nhắc bữa ăn và cà phê (iOS giữ tối đa 64)
+const MAX_PENDING = WATER_MAX_PENDING;
 const CHANNEL = 'water';
 
 let ready = false;
