@@ -170,7 +170,7 @@ export function Ring({ size, r, width, frac, color, track }: { size: number; r: 
 }
 
 // ---- biểu tượng (vẽ lại từ SVG trong bản HTML) ----
-type IconName = 'home' | 'chart' | 'gear' | 'plus' | 'camera' | 'image' | 'text' | 'search' | 'bowl' | 'flame' | 'sparkle' | 'drop';
+type IconName = 'home' | 'chart' | 'gear' | 'plus' | 'camera' | 'image' | 'text' | 'search' | 'bowl' | 'flame' | 'sparkle' | 'drop' | 'pencil';
 export function Icon({ name, size = 22, color, strokeWidth = 2 }: { name: IconName; size?: number; color: string; strokeWidth?: number }) {
   const sp = { fill: 'none', stroke: color, strokeWidth, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
   return (
@@ -178,6 +178,7 @@ export function Icon({ name, size = 22, color, strokeWidth = 2 }: { name: IconNa
       {name === 'home' && <Path {...sp} d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />}
       {name === 'chart' && <Path {...sp} d="M3 20h18M6 20v-6M11 20V6M16 20v-9M21 20v-4" />}
       {name === 'gear' && (<><Circle {...sp} cx={12} cy={12} r={3} /><Path {...sp} d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></>)}
+      {name === 'pencil' && <Path {...sp} d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4" />}
       {name === 'plus' && <Path {...sp} d="M12 5v14M5 12h14" />}
       {name === 'camera' && (<><Path {...sp} d="M4 8h3l2-3h6l2 3h3v11H4z" /><Circle {...sp} cx={12} cy={13} r={3.5} /></>)}
       {name === 'image' && (<><Rect {...sp} x={3} y={4} width={18} height={16} rx={2} /><Circle {...sp} cx={9} cy={10} r={2} /><Path {...sp} d="M21 17l-5-5-9 8" /></>)}

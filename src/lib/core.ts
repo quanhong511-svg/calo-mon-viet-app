@@ -3,9 +3,9 @@ import { byId, type Food } from './foods';
 
 export type Per100 = { kcal: number; p: number; c: number; f: number };
 /** Món trong bữa khi đang sửa (có per100 để đổi gram). */
-export type EditItem = { id: string | null; name: string; grams: number; per100: Per100; kcal: number; p: number; c: number; f: number; conf: number | null; note?: string };
+export type EditItem = { id: string | null; name: string; custom?: boolean; grams: number; per100: Per100; kcal: number; p: number; c: number; f: number; conf: number | null; note?: string };
 /** Món đã lưu. */
-export type Item = { id: string | null; name: string; grams: number; kcal: number; p: number; c: number; f: number };
+export type Item = { id: string | null; name: string; /** người dùng tự đặt tên, hiện tên này thay cho tên trong bảng */ custom?: boolean; grams: number; kcal: number; p: number; c: number; f: number };
 export type Meal = {
   id: string; meal: number | string; time: string; source?: string; servings: number; photo: string | null; items: Item[]; upd?: number; example?: boolean;
 };
@@ -36,7 +36,7 @@ export function mk(id: string, grams?: number): EditItem {
 export function cloneItem(it: Item | EditItem): EditItem {
   const g = Number(it.grams) || 1;
   const base = 'per100' in it && it.per100 ? { ...it.per100 } : { kcal: (it.kcal / g) * 100, p: (it.p / g) * 100, c: (it.c / g) * 100, f: (it.f / g) * 100 };
-  return scaleItem({ id: it.id || null, name: it.name, grams: g, per100: base, conf: ('conf' in it ? it.conf : null) ?? null, note: ('note' in it && it.note) || '', kcal: 0, p: 0, c: 0, f: 0 });
+  return scaleItem({ id: it.id || null, name: it.name, ...(it.custom ? { custom: true } : {}), grams: g, per100: base, conf: ('conf' in it ? it.conf : null) ?? null, note: ('note' in it && it.note) || '', kcal: 0, p: 0, c: 0, f: 0 });
 }
 
 export const sum = <T,>(a: T[], k: keyof T) => a.reduce((s, x) => s + (Number(x[k]) || 0), 0);
@@ -91,6 +91,6 @@ export function guessMeal() {
   return h < 4 ? 3 : h < 10 ? 0 : h < 14 ? 1 : h < 17 ? 3 : h < 21 ? 2 : 3;
 }
 export const toSaved = (it: EditItem): Item => ({
-  id: it.id, name: it.name, grams: Math.round(it.grams), kcal: +it.kcal.toFixed(1), p: +it.p.toFixed(1), c: +it.c.toFixed(1), f: +it.f.toFixed(1),
+  id: it.id, name: it.name, ...(it.custom ? { custom: true } : {}), grams: Math.round(it.grams), kcal: +it.kcal.toFixed(1), p: +it.p.toFixed(1), c: +it.c.toFixed(1), f: +it.f.toFixed(1),
 });
 export const newData = (): Data => ({ v: 1, target: 2000, days: {}, started: false });

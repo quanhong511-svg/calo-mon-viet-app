@@ -150,6 +150,11 @@ function ReviewSheet() {
     items[i] = scaleItem({ ...items[i], grams: Math.max(1, Math.round(Number(v) || 1)) });
     updateReview({ items });
   };
+  const setName = (i: number, v: string) => {
+    const items = rv.items.slice();
+    items[i] = { ...items[i], name: v.slice(0, 60), custom: true };
+    updateReview({ items });
+  };
   const stepOf = (g: number) => Math.max(5, Math.round((g * 0.1) / 5) * 5);
 
   return (
@@ -186,7 +191,10 @@ function ReviewSheet() {
         {rv.items.map((it, i) => (
           <View key={i} style={{ gap: 8, padding: 12, borderWidth: 1, borderColor: c.line, borderRadius: 12 }}>
             <Row between style={{ flexWrap: 'nowrap' }}>
-              <T bold style={{ flex: 1 }}>{itemName(lang, it)}{!it.id && <T muted style={{ fontSize: 11 }}>{'  ' + t.outside.toUpperCase()}</T>}</T>
+              <View style={{ flex: 1, gap: 2 }}>
+                <NameInput value={itemName(lang, it)} label={t.rename} onChange={(v) => setName(i, v)} />
+                {!it.id && <T muted style={{ fontSize: 11 }}>{t.outside.toUpperCase()}</T>}
+              </View>
               {it.conf != null && (
                 <View style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999, backgroundColor: it.conf < 0.6 ? c.warnSoft : c.accentSoft }}>
                   <T style={{ fontSize: 11, fontWeight: '600', color: it.conf < 0.6 ? c.warn : c.accent }}>{it.conf < 0.6 ? t.check : t.sure}</T>
@@ -231,5 +239,25 @@ function GramInput({ value, onDone }: { value: number; onDone: (v: number) => vo
       onEndEditing={() => setTxt(null)}
       onBlur={() => setTxt(null)}
     />
+  );
+}
+
+function NameInput({ value, label, onChange }: { value: string; label: string; onChange: (v: string) => void }) {
+  const c = useColors();
+  const [txt, setTxt] = useState<string | null>(null);
+  // giống GramInput: cập nhật ngay khi gõ; ô trống thì giữ tên cũ
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, borderBottomWidth: 1, borderColor: txt !== null ? c.accent : c.line }}>
+      <TextInput
+        style={{ flex: 1, fontSize: 16, fontWeight: '700', color: c.fg, paddingVertical: 4, paddingHorizontal: 0 }}
+        accessibilityLabel={label} returnKeyType="done" maxLength={60} autoCorrect={false}
+        value={txt ?? value}
+        onChangeText={(v) => { setTxt(v); if (v.trim()) onChange(v.trim()); }}
+        onFocus={() => setTxt(value)}
+        onEndEditing={() => setTxt(null)}
+        onBlur={() => setTxt(null)}
+      />
+      <Icon name="pencil" size={15} color={c.muted} />
+    </View>
   );
 }

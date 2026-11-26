@@ -5,7 +5,7 @@ import type { Lang, Strings } from './i18n';
 
 const fmtR = (lang: Lang) => (n: number) => Math.round(n).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN');
 export const fmtDate = (lang: Lang, s: string) => { const [y, m, d] = s.split('-'); return lang === 'en' ? `${m}/${d}/${y}` : `${d}/${m}/${y}`; };
-export const itemName = (lang: Lang, it: { id: string | null; name: string }) => (it.id && byId[it.id] ? (lang === 'en' ? byId[it.id].en : byId[it.id].vi) : it.name);
+export const itemName = (lang: Lang, it: { id: string | null; name: string; custom?: boolean }) => (!it.custom && it.id && byId[it.id] ? (lang === 'en' ? byId[it.id].en : byId[it.id].vi) : it.name);
 export const mealName = (t: Strings, m: number | string) => (typeof m === 'number' ? t.meals[m] : String(m));
 
 function scopeDays(data: Data, scope: 'day' | 'all', viewDate: string): [string, Meal[]][] {
@@ -54,7 +54,7 @@ function cleanMeal(m: any, id: string): Meal {
     id, meal: Number.isInteger(m.meal) && m.meal >= 0 && m.meal <= 3 ? m.meal : String(m.meal ?? '').slice(0, 30) || 3, time: String(m.time || '').slice(0, 8),
     source: String(m.source || 'manual').slice(0, 20), servings: sv > 0 && sv <= 10 ? sv : 1, photo: typeof m.photo === 'string' && PHOTO_RE.test(m.photo) ? m.photo : null, upd: Number(m.upd) || 0,
     items: m.items.filter((it: any) => it && typeof it === 'object').map((it: any) => ({
-      id: it.id && byId[it.id] ? it.id : null, name: String(it.name || '?').slice(0, 60), grams: Math.max(0, Number(it.grams) || 0),
+      id: it.id && byId[it.id] ? it.id : null, name: String(it.name || '?').slice(0, 60), ...(it.custom === true ? { custom: true } : {}), grams: Math.max(0, Number(it.grams) || 0),
       kcal: Math.max(0, Number(it.kcal) || 0), p: Math.max(0, Number(it.p) || 0), c: Math.max(0, Number(it.c) || 0), f: Math.max(0, Number(it.f) || 0),
     })),
   };
