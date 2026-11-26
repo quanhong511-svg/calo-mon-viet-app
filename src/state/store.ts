@@ -8,6 +8,7 @@ import { useSyncExternalStore } from 'react';
 import { Linking, Platform } from 'react-native';
 
 import { advicePrompt } from '@/lib/advice';
+import { decodeCard, type FriendCard } from '@/lib/friend';
 import { ADVICE_PROVS, itemsFromAI, parseJson, photoPrompt, PROV, runAI, SRC, textPrompt, type AiCfg, type AiError, type ProvId } from '@/lib/ai';
 import { findMeal, guessMeal, mk, newData, pad, todayIso, toSaved, uid, addDays, type Data, type EditItem } from '@/lib/core';
 import { STRINGS, type Lang, type Strings } from '@/lib/i18n';
@@ -20,7 +21,7 @@ import { scheduleCoffee } from '@/lib/coffee-remind';
 import { MEAL_REMIND_DEFAULT, mealTimesOf, scheduleMealRemind, type MealRemindCfg } from '@/lib/meal-remind';
 import { ensurePermission, remindersSupported, scheduleWater, WATER_DEFAULT, type WaterCfg } from '@/lib/water';
 
-export type SheetName = 'add' | 'text' | 'list' | 'ai' | 'review' | 'macros' | 'cheers' | 'advice';
+export type SheetName = 'add' | 'text' | 'list' | 'ai' | 'review' | 'macros' | 'cheers' | 'advice' | 'friend';
 export type Advice = { busy: boolean; text: string | null; err: string | null; at: number | null; prov: string | null };
 export type Alt = { id: string; p: number };
 export type Review = {
@@ -36,6 +37,8 @@ type State = {
   /** thu gọn thẻ So sánh 3 ngày (nhớ giữa các lần mở app) */
   cmpHidden: boolean;
   advice: Advice;
+  /** biệt danh khi chia sẻ so sánh, và thẻ của bạn bè quét gần nhất */
+  nick: string; friend: FriendCard | null;
   /** ngày hôm nay, đổi lúc qua nửa đêm (để màn hình vẽ lại) */
   today: string;
   /** giờ hiện tại (0–23), cập nhật mỗi phút để màn hình vẽ lại khi qua giờ */
@@ -52,6 +55,7 @@ let s: State = {
   viewDate: todayIso(), tab: 'home', sheet: null, rv: null, listTarget: null, pending: null, photo: null,
   cfg: cfg0, prov: cfg0.prov && PROV[cfg0.prov] ? cfg0.prov : 'none', aiMsg: null, gptOpen: false, local: null,
   toast: null, range: [7, 14, 30, 90].includes(store.get<number>('range') || 0) ? store.get<number>('range')! : 7, netMeta: null, busy: false, cmpHidden: store.get<boolean>('cmp-hidden') === true,
+  nick: store.get<string>('nick') || '', friend: decodeCard(store.get<string>('friend-last') || ''),
   advice: { busy: false, err: null, text: null, at: null, prov: null, ...(store.get<Partial<Advice>>('advice-last') || {}) },
   today: todayIso(), hour: new Date().getHours(),
 };
@@ -421,3 +425,14 @@ export async function askAdvice() {
   } finally { adviceAc = null; }
 }
 export function cancelAdvice() { adviceAc?.abort(); }
+
+// ---------- so sánh với bạn bè qua mã QR ----------
+export function setNick(n: string) { store.set('nick', n); set({ nick: n }); }
+/** Nhận mã của bạn bè (từ QR hoặc tin nhắn). Trả về false nếu mã không hợp lệ. */
+export function setFriendCode(text: string): boolean {
+  const card = decodeCard(text);
+  if (!card) return false;
+  store.set('friend-last', text.slice(text.indexOf('CMV1.')));
+  set({ friend: card });
+  return true;
+}

@@ -121,6 +121,17 @@ export default function Home() {
         </Card>
       </Pressable>
 
+      <Pressable accessibilityRole="button" onPress={() => openSheet('friend')}>
+        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <T style={{ fontSize: 22 }}>👥</T>
+          <View style={{ flex: 1, gap: 2 }}>
+            <T bold>{t.frEntry.replace(/^👥 /, '')}</T>
+            <T muted style={{ fontSize: 12 }}>{t.frEntryD}</T>
+          </View>
+          <T muted style={{ fontSize: 22 }}>›</T>
+        </Card>
+      </Pressable>
+
       <Row between><T h={2}>{t.mealsTitle}</T>{showExample(data, viewDate) && <T small muted style={{ flexShrink: 1 }}>{t.exNote}</T>}</Row>
 
       <View style={{ gap: 10 }}>

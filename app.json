@@ -62,6 +62,14 @@
             ]
           }
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Calo Món Việt dùng camera để chụp món ăn và quét mã QR so sánh với bạn bè.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
       ]
     ],
     "experiments": {

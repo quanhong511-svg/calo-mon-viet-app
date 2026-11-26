@@ -85,6 +85,15 @@ const vi = {
   adRun: 'Phân tích 3 ngày gần nhất', adAgain: 'Phân tích lại', adBusy: 'AI đang phân tích…', adAt: (s: string) => `Phân tích lúc ${s}`,
   adNeedKey: 'Cần chọn Gemini, Claude hoặc ChatGPT và nhập khoá API trong Cài đặt → Nhận diện ảnh tự động.', adGoSettings: 'Mở Cài đặt',
   adCheers: 'Xem lời chúc hôm nay', adCheersD: 'Thành tích và lời chúc của bạn hôm nay', adNoData: 'Chưa có bữa ăn nào trong 3 ngày gần nhất để phân tích.',
+  frEntry: '👥 So sánh với bạn bè', frEntryD: 'Quét mã QR của nhau để xem ai ăn uống tốt hơn trong 3 ngày gần nhất.', frTitle: 'So sánh với bạn bè',
+  frMine: 'Mã của tôi', frScan: 'Quét mã bạn bè', frResult: 'Kết quả', frNick: 'Biệt danh của bạn', frNickPh: 'Ví dụ: Quân béo',
+  frNeedNick: 'Đặt biệt danh để tạo mã QR.', frShowHint: 'Đưa mã này cho bạn bè quét trong app Calo Món Việt. Mã chỉ chứa biệt danh và số liệu tóm tắt 3 ngày (calo, đạm, tinh bột, béo, nước, điểm) – không có món ăn hay ảnh.',
+  frSend: 'Gửi mã qua tin nhắn', frSendMsg: (nick: string) => `${nick} rủ bạn so sánh ăn uống 3 ngày trên Calo Món Việt! Mở app → So sánh với bạn bè → Dán mã:`,
+  frCamAsk: 'Cho phép dùng camera để quét mã QR.', frCamBtn: 'Bật camera', frCamWeb: 'Bản web không quét được QR, hãy dán mã bên dưới.',
+  frPastePh: 'Hoặc dán mã bạn bè gửi (bắt đầu bằng CMV1.)', frPaste: 'Dán từ bộ nhớ tạm', frCompare: 'So sánh', frBad: 'Mã không hợp lệ. Hãy quét hoặc dán đúng mã từ app Calo Món Việt.',
+  frMe: 'Bạn', frWin: (n: string) => `🏆 ${n} đang dẫn trước!`, frTie: '🤝 Ngang ngửa nhau!', frPts: (a: number, b: number) => `${a} – ${b} điểm`,
+  frSlots: ['2 ngày trước', 'Hôm qua', 'Hôm nay'], frRows: { total: 'Tổng điểm 3 ngày', kcal: 'Calo TB/ngày', pct: '% mục tiêu calo', p: 'Đạm TB/ngày', w: 'Nước TB/ngày', full: 'Ngày đủ 3 bữa' },
+  frOld: (n: string, d: string) => `Mã của ${n} được tạo ngày ${d}.`, frAgain: 'Quét mã khác', frLegendT: 'vạch đứt = mục tiêu',
 };
 
 export type Strings = typeof vi;
@@ -175,6 +184,15 @@ const en: Strings = {
   adRun: 'Analyze the last 3 days', adAgain: 'Analyze again', adBusy: 'AI is analyzing…', adAt: (s: string) => `Analyzed at ${s}`,
   adNeedKey: 'Choose Gemini, Claude or ChatGPT and enter an API key in Settings → Automatic photo recognition.', adGoSettings: 'Open Settings',
   adCheers: "See today's cheers", adCheersD: 'Your achievements and cheers for today', adNoData: 'No meals in the last 3 days to analyze.',
+  frEntry: '👥 Compare with friends', frEntryD: "Scan each other's QR code to see who ate better over the last 3 days.", frTitle: 'Compare with friends',
+  frMine: 'My code', frScan: "Scan a friend's code", frResult: 'Result', frNick: 'Your nickname', frNickPh: 'e.g. Hungry Quan',
+  frNeedNick: 'Set a nickname to create your QR code.', frShowHint: 'Let a friend scan this code in Calo Món Việt. It holds only your nickname and a 3-day summary (calories, protein, carbs, fat, water, score) – no dishes or photos.',
+  frSend: 'Send code by message', frSendMsg: (nick: string) => `${nick} challenges you to compare the last 3 days on Calo Món Việt! Open the app → Compare with friends → Paste the code:`,
+  frCamAsk: 'Allow camera access to scan QR codes.', frCamBtn: 'Turn on camera', frCamWeb: "The web version can't scan QR codes; paste the code below.",
+  frPastePh: 'Or paste the code a friend sent (starts with CMV1.)', frPaste: 'Paste from clipboard', frCompare: 'Compare', frBad: 'Invalid code. Scan or paste a code from Calo Món Việt.',
+  frMe: 'You', frWin: (n: string) => `🏆 ${n} is ahead!`, frTie: "🤝 It's a tie!", frPts: (a: number, b: number) => `${a} – ${b} pts`,
+  frSlots: ['2 days ago', 'Yesterday', 'Today'], frRows: { total: '3-day score', kcal: 'Avg kcal/day', pct: '% of calorie goal', p: 'Avg protein/day', w: 'Avg water/day', full: 'Days with 3 meals' },
+  frOld: (n: string, d: string) => `${n}'s code was created on ${d}.`, frAgain: 'Scan another code', frLegendT: 'dashed line = goal',
 };
 
 export type Lang = 'vi' | 'en';
