@@ -26,6 +26,10 @@ export function Header() {
   );
 }
 
+/** kích thước biểu đồ vòng gộp và [chỉ số, bán kính, độ dày] của từng vòng, từ ngoài vào trong */
+const RING = 150;
+const RINGS = [['k', 68, 12], ['p', 54, 9], ['c', 42, 9], ['f', 30, 9]] as const;
+
 export default function Home() {
   const { data, viewDate, pending, lang, today: td } = useApp();
   const t = useT(), c = useColors();
@@ -47,28 +51,50 @@ export default function Home() {
         <Pressable accessibilityLabel="Next day" disabled={viewDate >= td} onPress={() => shiftDay(1)} style={{ width: 44, height: 36, alignItems: 'center', justifyContent: 'center', opacity: viewDate >= td ? 0.25 : 1 }}><T style={{ fontSize: 24 }}>›</T></Pressable>
       </Row>
 
-      <Card style={{ alignItems: 'center', gap: 6, paddingVertical: 18 }}>
-        <View style={{ width: 196, height: 196 }}>
-          <Ring size={196} r={84} width={14} frac={tt.k / tgt} color={left >= 0 ? c.accent : c.warn} track={c.line} />
-          <View style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}>
-            <T style={{ fontSize: 38, fontWeight: '700', color: left >= 0 ? c.fg : c.warn }}>{r0(Math.abs(left))}</T>
-            <T small muted>{left >= 0 ? t.left : t.over}</T>
+      <Pressable accessibilityRole="button" accessibilityHint={t.mcTap} onPress={() => openSheet('macros')}>
+        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 16, paddingVertical: 18 }}>
+          {/* vòng ngoài: calo; trong: đạm, tinh bột, chất béo */}
+          <View style={{ width: RING, height: RING }}>
+            {RINGS.map(([key, r, w], i) => {
+              const goal = key === 'k' ? tgt : M[i - 1][1], col = key === 'k' ? (left >= 0 ? c.accent : c.warn) : M[i - 1][2];
+              return (
+                <View key={key} style={{ position: 'absolute', inset: 0 }}>
+                  <Ring size={RING} r={r} width={w} frac={goal ? tt[key] / goal : 0} color={col} track={col} trackOpacity={0.16} />
+                </View>
+              );
+            })}
+            <View style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}>
+              <T style={{ fontSize: 15, fontWeight: '700', color: left >= 0 ? c.fg : c.warn }}>{`${Math.round((tt.k / tgt) * 100)}%`}</T>
+            </View>
           </View>
-        </View>
-        <T small muted>{`${t.eaten} ${r0(tt.k)} · ${t.goal} ${r0(tgt)} kcal`}</T>
-      </Card>
-
-      <View style={{ flexDirection: 'row', gap: 10 }}>
-        {M.map(([k, g, col, lbl]) => (
-          <Pressable key={k} style={{ flex: 1 }} accessibilityRole="button" accessibilityHint={t.mcTap} onPress={() => openSheet('macros')}>
-            <Card style={{ alignItems: 'center', gap: 4, paddingVertical: 12, paddingHorizontal: 6 }}>
-              <Ring size={54} r={22} width={6} frac={g ? tt[k] / g : 0} color={col} track={c.line} />
-              <T bold style={{ fontSize: 15 }}>{`${r0(tt[k])}/${r0(g)}g`}</T>
-              <T muted style={{ fontSize: 12 }}>{lbl}</T>
-            </Card>
-          </Pressable>
-        ))}
-      </View>
+          <View style={{ flex: 1, minWidth: 0, gap: 8 }}>
+            <View>
+              <Row style={{ gap: 6, alignItems: 'baseline' }}>
+                <T style={{ fontSize: 30, fontWeight: '700', color: left >= 0 ? c.fg : c.warn }}>{r0(Math.abs(left))}</T>
+                <T small muted>{left >= 0 ? t.left : t.over}</T>
+              </Row>
+              <T muted style={{ fontSize: 12 }}>{`${t.eaten} ${r0(tt.k)} / ${r0(tgt)} kcal`}</T>
+            </View>
+            {M.map(([k, g, col, lbl]) => {
+              const over = g > 0 && tt[k] > g * 1.1;
+              return (
+                <View key={k} style={{ gap: 3 }}>
+                  <Row between style={{ flexWrap: 'nowrap' }}>
+                    <Row style={{ gap: 6, flexShrink: 1, flexWrap: 'nowrap' }}>
+                      <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: col }} />
+                      <T numberOfLines={1} style={{ fontSize: 13, flexShrink: 1 }}>{lbl}</T>
+                    </Row>
+                    <T style={{ fontSize: 13, fontWeight: '700', color: over ? c.warn : c.fg }}>{`${r0(tt[k])}/${r0(g)}g`}</T>
+                  </Row>
+                  <View style={{ height: 4, borderRadius: 2, backgroundColor: c.line, overflow: 'hidden' }}>
+                    <View style={{ width: `${Math.min(100, g ? (tt[k] / g) * 100 : 0)}%`, height: '100%', backgroundColor: col }} />
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        </Card>
+      </Pressable>
 
       <WaterCard />
 

@@ -158,11 +158,11 @@ export function Sheet({ visible, onClose, title, children }: { visible: boolean;
   );
 }
 
-export function Ring({ size, r, width, frac, color, track }: { size: number; r: number; width: number; frac: number; color: string; track: string }) {
+export function Ring({ size, r, width, frac, color, track, trackOpacity = 1 }: { size: number; r: number; width: number; frac: number; color: string; track: string; trackOpacity?: number }) {
   const C = 2 * Math.PI * r, mid = size / 2;
   return (
     <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <Circle cx={mid} cy={mid} r={r} fill="none" stroke={track} strokeWidth={width} />
+      <Circle cx={mid} cy={mid} r={r} fill="none" stroke={track} strokeOpacity={trackOpacity} strokeWidth={width} />
       <Circle cx={mid} cy={mid} r={r} fill="none" stroke={color} strokeWidth={width} strokeLinecap="round"
         strokeDasharray={`${C} ${C}`} strokeDashoffset={C * (1 - Math.min(Math.max(frac, 0), 1))} transform={`rotate(-90 ${mid} ${mid})`} />
     </Svg>
