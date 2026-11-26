@@ -170,7 +170,7 @@ export function Ring({ size, r, width, frac, color, track }: { size: number; r: 
 }
 
 // ---- biểu tượng (vẽ lại từ SVG trong bản HTML) ----
-type IconName = 'home' | 'chart' | 'gear' | 'plus' | 'camera' | 'image' | 'text' | 'search' | 'bowl' | 'flame' | 'sparkle' | 'drop' | 'pencil';
+type IconName = 'home' | 'chart' | 'gear' | 'plus' | 'camera' | 'image' | 'text' | 'search' | 'bowl' | 'flame' | 'sparkle' | 'drop' | 'pencil' | 'coffee' | 'pourover' | 'espresso' | 'latte' | 'mug';
 export function Icon({ name, size = 22, color, strokeWidth = 2 }: { name: IconName; size?: number; color: string; strokeWidth?: number }) {
   const sp = { fill: 'none', stroke: color, strokeWidth, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
   return (
@@ -178,6 +178,11 @@ export function Icon({ name, size = 22, color, strokeWidth = 2 }: { name: IconNa
       {name === 'home' && <Path {...sp} d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />}
       {name === 'chart' && <Path {...sp} d="M3 20h18M6 20v-6M11 20V6M16 20v-9M21 20v-4" />}
       {name === 'gear' && (<><Circle {...sp} cx={12} cy={12} r={3} /><Path {...sp} d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></>)}
+      {name === 'coffee' && (<><Path {...sp} d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z" /><Path {...sp} d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16M8 3c0 1.5 1 1.5 1 3M12 3c0 1.5 1 1.5 1 3" /></>)}
+      {name === 'pourover' && (<><Path {...sp} d="M5 4h14l-4.5 7h-5z" /><Path {...sp} d="M12 11v2.5" /><Path {...sp} d="M7 15h10l-1 5H8z" /></>)}
+      {name === 'espresso' && (<><Path {...sp} d="M6 11h10v2.5a4 4 0 0 1-4 4h-2a4 4 0 0 1-4-4z" /><Path {...sp} d="M16 12h1a2 2 0 0 1 0 4h-1.6M4 20h16M9 5c0 1.5 1 1.5 1 3M13 5c0 1.5 1 1.5 1 3" /></>)}
+      {name === 'latte' && (<><Path {...sp} d="M7 3h10l-1.5 18h-7z" /><Path {...sp} d="M7.6 10h8.8M8.3 16h7.4" /></>)}
+      {name === 'mug' && (<><Path {...sp} d="M5 6h11v11a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z" /><Path {...sp} d="M16 9h1.5a2.5 2.5 0 0 1 0 5H16" /></>)}
       {name === 'pencil' && <Path {...sp} d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4" />}
       {name === 'plus' && <Path {...sp} d="M12 5v14M5 12h14" />}
       {name === 'camera' && (<><Path {...sp} d="M4 8h3l2-3h6l2 3h3v11H4z" /><Circle {...sp} cx={12} cy={13} r={3.5} /></>)}

@@ -59,6 +59,14 @@ const vi = {
   mcSplit: (p: number, c: number, f: number) => `Đạm ${p}% · Tinh bột ${c}% · Béo ${f}% năng lượng`,
   mtTitle: 'Hẹn giờ từng bữa', mtNote: 'Nhắc đúng giờ đã chọn; bữa nào đã ghi trong ngày thì không nhắc nữa.', mtNotiTitle: (meal: string) => `🍽️ Đến giờ ${meal.toLowerCase()}`,
   mtNotiBody: (meal: string) => `Ăn xong nhớ ghi lại ${meal.toLowerCase()} để theo dõi calo nhé.`, mtTime: 'Giờ',
+  coffee: 'Cà phê', coffeeTypes: { po: 'Pour Over', es: 'Espresso', la: 'Latte', jc: 'Just Coffee' },
+  coffeeSum: (n: number, mg: string) => `${n} ly · ~${mg} mg caffeine`, coffeeNone: 'Chưa uống ly nào', coffeeHint: 'Chạm để thêm một ly, nhấn giữ để bớt.',
+  coffeeHigh: 'Đã quá 400 mg caffeine, mức khuyến nghị tối đa mỗi ngày.',
+  coffeeRemind: 'Nhắc uống cà phê', coffeeMode: 'Kiểu nhắc', coffeeMorning: 'Mỗi sáng', coffeeIdle: 'Sau 4 giờ',
+  coffeeAt: 'Giờ nhắc', coffeeNoteMorning: 'Mỗi sáng một lời nhắc; hôm nào đã ghi cà phê thì không nhắc nữa.',
+  coffeeNoteIdle: 'Nhắc khi bạn không mở app 4 giờ liền (không nhắc từ 22:00 đến 7:00, không nhắc khi đã quá 400 mg).',
+  coffeeTitleMorning: '☕ Cà phê sáng nào!', coffeeBodyMorning: 'Pha một ly cho ngày mới và nhớ ghi lại trong app nhé.',
+  coffeeTitleIdle: '☕ Nghỉ tay uống cà phê?', coffeeBodyIdle: 'Đã 4 giờ bạn chưa mở app. Uống một ly rồi ghi lại nhé.',
 };
 
 export type Strings = typeof vi;
@@ -123,6 +131,14 @@ const en: Strings = {
   mcSplit: (p: number, c: number, f: number) => `Protein ${p}% · Carbs ${c}% · Fat ${f}% of energy`,
   mtTitle: 'Meal-time reminders', mtNote: "Reminds you at the chosen time; skipped once that meal is logged for the day.", mtNotiTitle: (meal: string) => `🍽️ Time for ${meal.toLowerCase()}`,
   mtNotiBody: (meal: string) => `Remember to log your ${meal.toLowerCase()} to keep track of calories.`, mtTime: 'Time',
+  coffee: 'Coffee', coffeeTypes: { po: 'Pour Over', es: 'Espresso', la: 'Latte', jc: 'Just Coffee' },
+  coffeeSum: (n: number, mg: string) => `${n} cup${n === 1 ? '' : 's'} · ~${mg} mg caffeine`, coffeeNone: 'No coffee yet', coffeeHint: 'Tap to add a cup, long-press to remove one.',
+  coffeeHigh: 'Over 400 mg caffeine, the recommended daily maximum.',
+  coffeeRemind: 'Coffee reminders', coffeeMode: 'Remind', coffeeMorning: 'Every morning', coffeeIdle: 'After 4 h',
+  coffeeAt: 'Time', coffeeNoteMorning: "One reminder each morning; skipped on days you've already logged coffee.",
+  coffeeNoteIdle: "Reminds you when you haven't opened the app for 4 hours (not between 22:00 and 7:00, not once you're over 400 mg).",
+  coffeeTitleMorning: '☕ Morning coffee time!', coffeeBodyMorning: 'Brew a cup for the day and remember to log it.',
+  coffeeTitleIdle: '☕ Coffee break?', coffeeBodyIdle: "You haven't opened the app in 4 hours. Grab a cup and log it.",
 };
 
 export type Lang = 'vi' | 'en';

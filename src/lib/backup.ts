@@ -43,7 +43,7 @@ export function toCsv(data: Data, t: Strings, lang: Lang) {
 
 export const backup = (data: Data, lang: Lang) => ({
   app: 'calo-mon-viet', v: 5, exported: new Date().toISOString(), target: data.target, targets: data.targets || null, lang, days: data.days, deleted: data.deleted || {},
-  water: data.water || {},
+  water: data.water || {}, coffee: data.coffee || {},
 });
 
 export const validTarget = (v: unknown) => { const n = Number(v); return n >= 800 && n <= 5000 ? Math.round(n) : null; };
@@ -90,6 +90,14 @@ export function mergeBackup(data: Data, j: any): [number, number] {
   if (j.water && typeof j.water === 'object') for (const [d, v] of Object.entries(j.water)) {
     const ml = Math.round(Number(v));
     if (/^\d{4}-\d{2}-\d{2}$/.test(d) && ml > 0 && ml < 20000 && ml > ((data.water ||= {})[d] || 0)) data.water[d] = ml;
+  }
+  // cà phê: mỗi ngày, mỗi loại giữ số lớn hơn
+  if (j.coffee && typeof j.coffee === 'object') for (const [d, v] of Object.entries(j.coffee)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || !v || typeof v !== 'object') continue;
+    for (const k of ['po', 'es', 'la', 'jc'] as const) {
+      const n = Math.round(Number((v as any)[k]));
+      if (n > 0 && n <= 20 && n > (((data.coffee ||= {})[d] ||= {})[k] || 0)) data.coffee[d][k] = n;
+    }
   }
   if (nm) data.started = true;
   return [touched.size, nm];

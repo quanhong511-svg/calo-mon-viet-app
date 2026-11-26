@@ -14,6 +14,7 @@ import { parseText } from '@/lib/parse-text';
 import { trendReportHtml } from '@/lib/report';
 import { getFoodNet, modelUsable, prepPhoto, recognizeLocal, type Photo } from '@/lib/photo';
 import { store } from '@/lib/storage';
+import { coffeeCfgOf, scheduleCoffee, type CoffeeCfg, type CoffeeKind } from '@/lib/coffee';
 import { MEAL_REMIND_DEFAULT, mealTimesOf, scheduleMealRemind, type MealRemindCfg } from '@/lib/meal-remind';
 import { ensurePermission, remindersSupported, scheduleWater, WATER_DEFAULT, type WaterCfg } from '@/lib/water';
 
@@ -327,7 +328,8 @@ export function rescheduleWater(delay = 600) {
   waterTimer = setTimeout(() => {
     // chạy lần lượt: mỗi hàm tự huỷ lịch cũ của mình rồi mới đặt lịch mới
     scheduleWater(waterCfg(), waterOn(todayIso()), tr(), s.lang).catch(() => {})
-      .then(() => scheduleMealRemind(mealRemindOf(s.data), mealTimesOf(s.data), s.data, tr(), s.lang)).catch(() => {});
+      .then(() => scheduleMealRemind(mealRemindOf(s.data), mealTimesOf(s.data), s.data, tr(), s.lang)).catch(() => {})
+      .then(() => scheduleCoffee(coffeeCfgOf(s.data), s.data, tr())).catch(() => {});
   }, delay);
 }
 export function addWater(ml: number) {
@@ -362,5 +364,22 @@ export function setMacros(m: { p: number; c: number; f: number } | null) {
 export async function setMealTime(i: number, p: Partial<{ on: boolean; at: number }>) {
   if (p.on && !(await ensurePermission())) { toast(tr().waterDenied, undefined, 6000); return; }
   commit((d) => { (d.mealTimes ||= {})[i] = { ...mealTimesOf(d)[i], ...p }; });
+  rescheduleWater(0);
+}
+
+// ---------- cà phê ----------
+export function addCoffee(kind: CoffeeKind, delta: 1 | -1) {
+  const day = s.viewDate, cur = s.data.coffee?.[day]?.[kind] || 0;
+  const next = Math.max(0, Math.min(20, cur + delta));
+  if (next === cur) return;
+  commit((d) => {
+    const c = ((d.coffee ||= {})[day] ||= {});
+    if (next) c[kind] = next; else delete c[kind];
+    if (!Object.keys(c).length) delete d.coffee![day];
+  });
+}
+export async function setCoffeeCfg(p: Partial<CoffeeCfg>) {
+  if (p.on && !(await ensurePermission())) { toast(tr().waterDenied, undefined, 6000); return; }
+  commit((d) => { d.coffeeCfg = { ...coffeeCfgOf(d), ...p }; });
   rescheduleWater(0);
 }

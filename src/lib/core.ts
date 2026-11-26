@@ -19,6 +19,10 @@ export type Data = {
   mealRemind?: { on: boolean; at: number };
   /** mục tiêu gam đạm / tinh bột / béo mỗi ngày; không có thì theo tỉ lệ 20/50/30 của mục tiêu kcal */
   macros?: { p: number; c: number; f: number };
+  /** số ly cà phê theo ngày và loại */
+  coffee?: Record<string, Partial<Record<'po' | 'es' | 'la' | 'jc', number>>>;
+  /** nhắc uống cà phê: mỗi sáng lúc at (phút từ 0:00), hoặc sau 4 giờ không mở app */
+  coffeeCfg?: { on: boolean; mode: 'morning' | 'idle'; at: number };
   /** hẹn giờ nhắc từng bữa, khoá = số bữa; at = phút từ 0:00 */
   mealTimes?: Record<string, { on: boolean; at: number }>;
 };

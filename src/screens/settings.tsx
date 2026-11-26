@@ -12,7 +12,8 @@ import { macroSplit, macroTargets, MEAL_ORDER, setTarget, todayIso, pad } from '
 import { fmtTime, mealTimesOf } from '@/lib/meal-remind';
 import { embedBackup, extractBackup, isPdf, logPdfHtml } from '@/lib/log-pdf';
 import { getFoodNet } from '@/lib/photo';
-import { commit, get, mealRemindOf, openSheet, saveCfg, set, setLang, setMealRemind, setMealTime, setProv, setWaterCfg, toast, useApp, useT, waterCfg, waterCfgOf } from '@/state/store';
+import { coffeeCfgOf } from '@/lib/coffee';
+import { commit, get, mealRemindOf, openSheet, setCoffeeCfg, saveCfg, set, setLang, setMealRemind, setMealTime, setProv, setWaterCfg, toast, useApp, useT, waterCfg, waterCfgOf } from '@/state/store';
 import { remindersSupported, slots } from '@/lib/water';
 import { Btn, Card, Icon, inputStyle, Note, Row, Seg, T } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
@@ -142,6 +143,7 @@ export default function Settings() {
       </Card>
 
       <WaterSettings />
+      <CoffeeSettings />
       <MealRemindSettings />
 
       <Card style={{ gap: 12 }}>
@@ -228,6 +230,34 @@ function Stepper({ value, label, onChange, min, max, step = 1, fmt = (v: number)
       <T style={{ width: 58, textAlign: 'center' }}>{fmt(value)}</T>
       <Pressable accessibilityLabel={`${label} +`} disabled={value >= max} onPress={() => onChange(Math.min(max, value + step))} style={[b, { opacity: value >= max ? 0.4 : 1 }]}><T>+</T></Pressable>
     </View>
+  );
+}
+
+function CoffeeSettings() {
+  const { data } = useApp();
+  const t = useT(), c = useColors(), k = coffeeCfgOf(data);
+  return (
+    <Card style={{ gap: 12 }}>
+      <Row style={{ gap: 6 }}><Icon name="coffee" size={20} color={c.coffee} /><T h={2}>{t.coffee}</T></Row>
+      {remindersSupported ? (
+        <Row between><T>{t.coffeeRemind}</T>
+          <Seg items={[{ v: 'off', label: t.waterOff }, { v: 'on', label: t.waterOn }]} value={k.on ? 'on' : 'off'} onChange={(v) => setCoffeeCfg({ on: v === 'on' })} />
+        </Row>
+      ) : <T small muted>{`${t.coffeeRemind}: ${t.waterWeb.toLowerCase()}`}</T>}
+      {remindersSupported && k.on && (
+        <>
+          <Row between><T>{t.coffeeMode}</T>
+            <Seg small items={[{ v: 'morning' as const, label: t.coffeeMorning }, { v: 'idle' as const, label: t.coffeeIdle }]} value={k.mode} onChange={(v) => setCoffeeCfg({ mode: v })} />
+          </Row>
+          {k.mode === 'morning' && (
+            <Row between><T>{t.coffeeAt}</T>
+              <Stepper value={k.at} label={t.coffeeAt} min={5 * 60} max={11 * 60 + 45} step={15} fmt={fmtTime} onChange={(v) => setCoffeeCfg({ at: v })} />
+            </Row>
+          )}
+          <T small muted>{k.mode === 'morning' ? t.coffeeNoteMorning : t.coffeeNoteIdle}</T>
+        </>
+      )}
+    </Card>
   );
 }
 

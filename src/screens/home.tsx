@@ -1,10 +1,11 @@
 import { ActivityIndicator, Image, Pressable, View } from 'react-native';
 
 import { itemName, fmtDate, mealName } from '@/lib/backup';
+import { CAFFEINE_MAX, COFFEE_ICON, COFFEE_KINDS, coffeeDay } from '@/lib/coffee';
 import { compareDays, type DayScore } from '@/lib/compare';
 import { addDays, cloneItem, dayMeals, dayTotals, guessMeal, macroSplit, macroTargets, mealTot, showExample, streak, targetOn } from '@/lib/core';
 import { remindersSupported } from '@/lib/water';
-import { addWater, cancelPhotoAI, mealRemindOf, openReview, openSheet, setMealRemind, shiftDay, useApp, useT, waterCfgOf } from '@/state/store';
+import { addCoffee, addWater, cancelPhotoAI, mealRemindOf, openReview, openSheet, setMealRemind, shiftDay, useApp, useT, waterCfgOf } from '@/state/store';
 import { Btn, Card, GeminiBadge, Icon, Ring, Row, T, XBtn } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
@@ -70,6 +71,8 @@ export default function Home() {
       </View>
 
       <WaterCard />
+
+      <CoffeeCard />
 
       <CompareCard />
 
@@ -234,5 +237,36 @@ function DayCol({ x, label, best, col, r0 }: { x: DayScore; label: string; best:
         <View style={{ flex: 1, justifyContent: 'center', minHeight: 70 }}><T muted small>{t.cmpNone}</T></View>
       )}
     </View>
+  );
+}
+
+function CoffeeCard() {
+  const { data, viewDate, lang } = useApp();
+  const t = useT(), c = useColors();
+  const r0 = (n: number) => Math.round(n).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN');
+  const day = coffeeDay(data, viewDate), high = day.mg > CAFFEINE_MAX;
+  return (
+    <Card style={{ gap: 10 }}>
+      <Row between>
+        <Row style={{ gap: 6 }}><Icon name="coffee" size={20} color={c.coffee} /><T h={3}>{t.coffee}</T></Row>
+        <T small style={{ color: high ? c.warn : c.muted }}>{day.cups ? t.coffeeSum(day.cups, r0(day.mg)) : t.coffeeNone}</T>
+      </Row>
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        {COFFEE_KINDS.map((k) => {
+          const n = day.counts[k] || 0;
+          return (
+            <Pressable key={k} accessibilityRole="button" accessibilityLabel={`${t.coffeeTypes[k]}: ${n}`} accessibilityHint={t.coffeeHint}
+              onPress={() => addCoffee(k, 1)} onLongPress={() => addCoffee(k, -1)} delayLongPress={350}
+              style={({ pressed }) => ({ flex: 1, alignItems: 'center', gap: 4, paddingVertical: 10, paddingHorizontal: 2, borderRadius: 12, borderWidth: 1,
+                borderColor: n ? c.coffee : c.line, backgroundColor: n ? c.coffeeSoft : c.bg, opacity: pressed ? 0.75 : 1 })}>
+              <Icon name={COFFEE_ICON[k]} size={28} color={c.coffee} strokeWidth={1.8} />
+              <T numberOfLines={1} style={{ fontSize: 11, fontWeight: '600', color: c.fg }}>{t.coffeeTypes[k]}</T>
+              <T style={{ fontSize: 15, fontWeight: '700', color: n ? c.coffee : c.muted }}>{n}</T>
+            </Pressable>
+          );
+        })}
+      </View>
+      <T muted style={{ fontSize: 11 }}>{high ? t.coffeeHigh : t.coffeeHint}</T>
+    </Card>
   );
 }

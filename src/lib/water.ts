@@ -31,6 +31,8 @@ export async function setupNotifications() {
     // eslint-disable-next-line import/namespace
     await Notifications.setNotificationChannelAsync(CHANNEL, { name: 'Nhắc uống nước', importance: Notifications.AndroidImportance.DEFAULT }).catch(() => {});
     // eslint-disable-next-line import/namespace
+    await Notifications.setNotificationChannelAsync('coffee', { name: 'Nhắc uống cà phê', importance: Notifications.AndroidImportance.DEFAULT }).catch(() => {});
+    // eslint-disable-next-line import/namespace
     await Notifications.setNotificationChannelAsync('meals', { name: 'Tổng kết bữa ăn', importance: Notifications.AndroidImportance.DEFAULT }).catch(() => {});
   }
 }
