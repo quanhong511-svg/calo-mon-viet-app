@@ -9,7 +9,7 @@ import { itemName } from '@/lib/backup';
 import { sum } from '@/lib/core';
 import { norm } from '@/lib/parse-text';
 import { captureAndShare } from '@/lib/share-image';
-import { toast, useApp, useT } from '@/state/store';
+import { artQuickScan, get, toast, useApp, useT } from '@/state/store';
 import { Btn, inputStyle, Note, T } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
 
@@ -69,7 +69,7 @@ const Shade = ({ from = 0, to = 0.75, top }: { from?: number; to?: number; top?:
 );
 
 /** kcal / macros = null khi ảnh không gắn với bữa ăn nào (chọn từ thư viện chỉ để tạo ảnh). */
-type Info = { title: string; kcal: string | null; macros: { p: number; c: number; f: number } | null; tags: string };
+type Info = { title: string; kcal: string | null; grams: string | null; macros: { p: number; c: number; f: number } | null; tags: string };
 
 function Layout({ id, uri, f, info }: { id: LayoutId; uri: string; f: FilterId; info: Info }) {
   const { w, h } = SIZE[id];
@@ -78,7 +78,7 @@ function Layout({ id, uri, f, info }: { id: LayoutId; uri: string; f: FilterId; 
   const shadow = { textShadowColor: 'rgba(0,0,0,0.45)', textShadowRadius: 6, textShadowOffset: { width: 0, height: 1 } };
   const brand = (color = '#ffffff') => <T style={{ color, fontSize: 10, fontWeight: '800', letterSpacing: 0.5 }}>{`🍜 ${APP}`}</T>;
   const m = info.macros;
-  const macroLine = m ? `${t.protein} ${m.p}g · ${t.carb} ${m.c}g · ${t.fat} ${m.f}g` : '';
+  const macroLine = m ? `${info.grams ? info.grams + ' g · ' : ''}${t.protein} ${m.p}g · ${t.carb} ${m.c}g · ${t.fat} ${m.f}g` : '';
   let body: ReactNode;
   if (id === 'clean') body = (
     <>
@@ -112,7 +112,7 @@ function Layout({ id, uri, f, info }: { id: LayoutId; uri: string; f: FilterId; 
         <Photo uri={uri} f={f} style={{ width: w, height: h * 0.56 }} />
         <View style={{ flex: 1, padding: 14, gap: 6 }}>
           <T numberOfLines={info.kcal ? 1 : 3} style={{ color: '#16231d', fontSize: info.kcal ? 16 : 22, fontWeight: '800' }}>{info.title}</T>
-          {!!info.kcal && <T style={{ color: '#0f6b4f', fontSize: 26, fontWeight: '800' }}>{info.kcal}<T style={{ fontSize: 12, color: '#5d6d65', fontWeight: '600' }}> kcal</T></T>}
+          {!!info.kcal && <T style={{ color: '#0f6b4f', fontSize: 26, fontWeight: '800' }}>{info.kcal}<T style={{ fontSize: 12, color: '#5d6d65', fontWeight: '600' }}>{` kcal${info.grams ? ` · ${info.grams} g` : ''}`}</T></T>}
           {bars.map(([n, g, frac, col]) => (
             <View key={n} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <T style={{ width: 52, fontSize: 10, color: '#5d6d65' }}>{n}</T>
@@ -162,16 +162,19 @@ function Layout({ id, uri, f, info }: { id: LayoutId; uri: string; f: FilterId; 
 
 /** Hashtag mặc định: tên app + tên món (không dấu, viết liền) + vài thẻ chung. */
 function defaultTags(names: string[]) {
-  const pascal = (s: string) => '#' + norm(s).split(/\s+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join('');
-  return ['#CaloMonViet', ...names.slice(0, 2).map(pascal), '#DemCalo', '#AnUongLanhManh'].join(' ');
+  const pascal = (s: string) => '#' + norm(s).replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join('');
+  // "bún chả, trà đá" → #BunCha #TraDa
+  const parts = names.flatMap((n) => n.split(/[,;+/&]/)).map((x) => x.trim()).filter(Boolean);
+  const dishTags = [...new Set(parts.slice(0, 3).map(pascal).filter((x) => x.length > 1))];
+  return ['#CaloMonViet', ...dishTags, '#DemCalo', '#AnUongLanhManh'].join(' ');
 }
 
 export function ArtSheet() {
-  const { rv, photo, lang, artUri } = useApp();
+  const { rv, photo, lang, artUri, artScan } = useApp();
   const t = useT(), c = useColors();
   // artUri: ảnh chọn từ thư viện chỉ để tạo ảnh, không gắn với bữa ăn
   const standalone = !!artUri;
-  const items = standalone ? [] : rv?.items || [];
+  const items = standalone ? artScan.items : rv?.items || [];
   const sv = Number(rv?.servings) || 1;
   const names = items.map((it) => itemName(lang, it));
   // ảnh gốc độ phân giải cao nếu đang ở lượt chụp này; bữa đã lưu chỉ còn ảnh nhỏ
@@ -186,7 +189,8 @@ export function ArtSheet() {
   const shot = useRef<ComponentRef<typeof View>>(null);
   const r0 = (n: number) => Math.round(n).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN');
   const info: Info = {
-    title: (standalone ? dish.trim() : names.join(', ')) || APP,
+    title: (standalone ? dish.trim() || names.join(', ') : names.join(', ')) || APP,
+    grams: items.length ? r0(sum(items, 'grams') * sv) : null,
     kcal: items.length ? r0(sum(items, 'kcal') * sv) : null,
     macros: items.length ? { p: Math.round(sum(items, 'p') * sv), c: Math.round(sum(items, 'c') * sv), f: Math.round(sum(items, 'f') * sv) } : null,
     tags: tags.trim(),
@@ -204,6 +208,34 @@ export function ArtSheet() {
         <View ref={shot} collapsable={false}><Layout id={layout} uri={uri} f={f} info={info} /></View>
       </View>
       <T small muted style={{ textAlign: 'center' }}>{`${t.arSize(sz.ow, sz.oh)}${!picked && !fullUri ? ' · ' + t.arLowRes : ''}`}</T>
+      {standalone && (
+        <Btn full kind={items.length ? undefined : 'pri'} disabled={artScan.busy}
+          label={artScan.busy ? t.arScanBusy : items.length ? t.arScanAgain : t.arScan}
+          onPress={async () => {
+            await artQuickScan(uri, dish);
+            const found = get().artScan.items.map((it) => itemName(lang, it));
+            if (!tagsEdited && found.length) setTags(defaultTags(dish.trim() ? [dish] : found));
+          }} />
+      )}
+      {items.length > 0 && (
+        <View style={{ gap: 6, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: c.line, backgroundColor: c.bg }}>
+          {items.map((it, i) => (
+            <View key={i} style={{ flexDirection: 'row', gap: 8 }}>
+              <T small numberOfLines={1} style={{ flex: 1 }}>{itemName(lang, it)}</T>
+              <T small muted>{`${r0(it.grams * sv)} g`}</T>
+              <T small bold style={{ width: 70, textAlign: 'right' }}>{`${r0(it.kcal * sv)} kcal`}</T>
+            </View>
+          ))}
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, paddingTop: 6, borderTopWidth: 1, borderColor: c.line }}>
+            <T small bold>{`${t.arTotal}: ${info.kcal} kcal`}</T>
+            <T small muted>{`${t.arWeight} ${info.grams} g`}</T>
+            <T small style={{ color: c.protein }}>{`${t.protein} ${info.macros?.p}g`}</T>
+            <T small style={{ color: c.carb }}>{`${t.carb} ${info.macros?.c}g`}</T>
+            <T small style={{ color: c.fat }}>{`${t.fat} ${info.macros?.f}g`}</T>
+          </View>
+          {standalone && !!artScan.source && <T muted style={{ fontSize: 11 }}>{t.arScanHow(artScan.source === 'offline' ? 'Calo Món Việt (offline)' : artScan.source)}</T>}
+        </View>
+      )}
       <T small bold>{t.arFilter}</T>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
         {FILTERS.map((id) => (

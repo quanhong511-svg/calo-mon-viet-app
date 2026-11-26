@@ -106,6 +106,9 @@ const vi = {
   arLayouts: { clean: 'Tối giản', polaroid: 'Polaroid', card: 'Thẻ calo', magazine: 'Tạp chí', story: 'Story 9:16' },
   arPick: 'Chọn ảnh khác', arShare: 'Chia sẻ ảnh', arLowRes: 'Ảnh đã lưu chỉ còn bản nhỏ; chọn lại ảnh gốc để nét hơn.', arStory: 'Hôm nay mình ăn gì? 🍜',
   arSize: (w: number, h: number) => `Ảnh ${w}×${h}`,
+  arScan: '⚡ Quét nhanh chỉ số', arScanBusy: 'Đang quét…', arScanAgain: '⚡ Quét lại',
+  arScanNone: 'Chưa tìm ra món. Hãy nhập tên món rồi quét lại, hoặc chọn Gemini/Claude/ChatGPT trong Cài đặt để quét bằng ảnh.',
+  arScanHow: (src: string) => `Chỉ số từ ${src} – chỉ mang tính ước tính.`, arTotal: 'Tổng', arWeight: 'Khối lượng',
 };
 
 export type Strings = typeof vi;
@@ -217,6 +220,9 @@ const en: Strings = {
   arLayouts: { clean: 'Minimal', polaroid: 'Polaroid', card: 'Calorie card', magazine: 'Magazine', story: 'Story 9:16' },
   arPick: 'Pick another photo', arShare: 'Share image', arLowRes: 'Saved meals keep only a small photo; pick the original for a sharper image.', arStory: 'What I ate today 🍜',
   arSize: (w: number, h: number) => `${w}×${h} image`,
+  arScan: '⚡ Quick scan nutrition', arScanBusy: 'Scanning…', arScanAgain: '⚡ Scan again',
+  arScanNone: "Couldn't find the dish. Type the dish name and scan again, or choose Gemini/Claude/ChatGPT in Settings to scan the photo.",
+  arScanHow: (src: string) => `Figures from ${src} – estimates only.`, arTotal: 'Total', arWeight: 'Weight',
 };
 
 export type Lang = 'vi' | 'en';
