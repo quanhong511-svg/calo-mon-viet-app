@@ -1,21 +1,22 @@
-// Các bộ nhận diện AI qua mạng (chép từ bản HTML; trên điện thoại không bị chặn CORS nên gọi thẳng được).
+// Các dịch vụ AI qua mạng: Google Gemini, Anthropic Claude, OpenAI ChatGPT (người dùng tự nhập khoá API).
 import { scaleItem, per100, type EditItem } from './core';
 import { byId, DB } from './foods';
 import type { Lang, Strings } from './i18n';
 
-export type ProvId = 'device' | 'none' | 'gemini' | 'openrouter' | 'groq' | 'ollama';
-type Prov = { label: keyof Strings; desc: keyof Strings; direct?: boolean; key?: boolean; local?: boolean; noText?: boolean; model?: string; url?: string; link?: string };
+export type ProvId = 'device' | 'none' | 'gemini' | 'claude' | 'openai';
+type Prov = { label: keyof Strings; desc: keyof Strings; direct?: boolean; key?: boolean; local?: boolean; noText?: boolean; model?: string; link?: string };
 export const PROV: Record<ProvId, Prov> = {
   none: { label: 'p_none', desc: 'p_none_d' },
   device: { label: 'p_device', desc: 'p_device_d', local: true, noText: true },
   gemini: { label: 'p_gemini', desc: 'p_gemini_d', direct: true, key: true, model: 'gemini-3.1-flash-lite', link: 'https://aistudio.google.com/apikey' },
-  openrouter: { label: 'p_openrouter', desc: 'p_openrouter_d', direct: true, key: true, model: 'google/gemma-3-27b-it:free', link: 'https://openrouter.ai/keys' },
-  groq: { label: 'p_groq', desc: 'p_groq_d', direct: true, key: true, model: 'meta-llama/llama-4-scout-17b-16e-instruct', link: 'https://console.groq.com/keys' },
-  ollama: { label: 'p_ollama', desc: 'p_ollama_d', direct: true, local: true, model: 'qwen2.5vl:7b', url: 'http://192.168.1.10:11434', link: 'https://ollama.com/download' },
+  claude: { label: 'p_claude', desc: 'p_claude_d', direct: true, key: true, model: 'claude-opus-5-5', link: 'https://platform.claude.com/settings/keys' },
+  openai: { label: 'p_openai', desc: 'p_openai_d', direct: true, key: true, model: 'gpt-5-mini', link: 'https://platform.openai.com/api-keys' },
 };
-export const SRC: Record<string, string> = { device: 'Offline', gemini: 'Gemini', openrouter: 'OpenRouter', groq: 'Groq', ollama: 'Ollama' };
+export const SRC: Record<string, string> = { device: 'Offline', gemini: 'Gemini', claude: 'Claude', openai: 'ChatGPT' };
+/** Các dịch vụ dùng được cho tư vấn dinh dưỡng (cần khoá API). */
+export const ADVICE_PROVS: ProvId[] = ['gemini', 'claude', 'openai'];
 
-export type ProvCfg = { key?: string; model?: string; url?: string };
+export type ProvCfg = { key?: string; model?: string };
 export type AiCfg = { prov?: ProvId } & Partial<Record<ProvId, ProvCfg>>;
 export type Img = { dataUrl: string; b64: string };
 export type AiError = { msg?: string; code?: 'cancelled' };
@@ -92,10 +93,33 @@ async function postJson(t: Strings, url: string, body: unknown, headers: Record<
   return j;
 }
 
-async function openaiLike(t: Strings, url: string, model: string, key: string, prompt: string, img: Img | null, signal?: AbortSignal) {
+async function openai(t: Strings, model: string, key: string, prompt: string, img: Img | null, mode: Mode, signal?: AbortSignal) {
   const content = img ? [{ type: 'text', text: prompt }, { type: 'image_url', image_url: { url: img.dataUrl } }] : prompt;
-  const j = await postJson(t, url, { model, temperature: 0.2, messages: [{ role: 'user', content }] }, { Authorization: 'Bearer ' + key }, signal);
+  // không gửi temperature: các model GPT-5 chỉ nhận giá trị mặc định
+  const body = { model, messages: [{ role: 'user', content }], ...(mode === 'json' ? { response_format: { type: 'json_object' } } : {}) };
+  const j = await postJson(t, 'https://api.openai.com/v1/chat/completions', body, { Authorization: 'Bearer ' + key }, signal);
   return j?.choices?.[0]?.message?.content;
+}
+
+async function claude(t: Strings, model: string, key: string, prompt: string, img: Img | null, mode: Mode, signal?: AbortSignal) {
+  // Gọi thẳng Messages API (SDK @anthropic-ai/sdk lỗi khởi tạo vòng import khi đóng gói bằng Metro).
+  const content: any[] = [];
+  if (img) content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: img.b64 } });
+  content.push({ type: 'text', text: prompt });
+  const body = {
+    model, max_tokens: 16000,
+    // bị từ chối vì chính sách thì máy chủ tự chạy lại trên model dự phòng
+    fallbacks: 'default',
+    output_config: { effort: mode === 'json' ? 'low' : 'medium' },
+    messages: [{ role: 'user', content }],
+  };
+  const j = await postJson(t, 'https://api.anthropic.com/v1/messages', body, {
+    'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-beta': 'server-side-fallback-2026-07-01',
+    // khoá của chính người dùng, lưu trên máy họ; cần cho bản web gọi thẳng từ trình duyệt
+    'anthropic-dangerous-direct-browser-access': 'true',
+  }, signal);
+  if (j?.stop_reason === 'refusal') throw { msg: t.errRefusal } as AiError;
+  return (j?.content || []).map((b: any) => (b.type === 'text' ? b.text : '')).join('');
 }
 
 const verOf = (n: string) => {
@@ -113,8 +137,9 @@ async function listGemini(key: string, signal?: AbortSignal): Promise<string[]> 
   } catch { return []; }
 }
 
-/** Gọi bộ nhận diện đang chọn. onModel báo khi Gemini phải đổi sang model khác. */
-export async function runAI(t: Strings, prov: ProvId, c: ProvCfg, prompt: string, img: Img | null, signal?: AbortSignal, onModel?: (m: string) => void): Promise<string | undefined> {
+type Mode = 'json' | 'text';
+/** Gọi dịch vụ AI đang chọn. mode 'json' cho nhận diện món, 'text' cho tư vấn. onModel báo khi Gemini phải đổi sang model khác. */
+export async function runAI(t: Strings, prov: ProvId, c: ProvCfg, prompt: string, img: Img | null, signal?: AbortSignal, onModel?: (m: string) => void, mode: Mode = 'json'): Promise<string | undefined> {
   if (prov === 'gemini') {
     const parts: any[] = [{ text: prompt }];
     if (img) parts.push({ inline_data: { mime_type: 'image/jpeg', data: img.b64 } });
@@ -122,7 +147,7 @@ export async function runAI(t: Strings, prov: ProvId, c: ProvCfg, prompt: string
     let noThink = true;
     const call = async (m: string): Promise<any> => {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent`;
-      const gen = { responseMimeType: 'application/json', temperature: 0.2, ...(noThink ? { thinkingConfig: { thinkingBudget: 0 } } : {}) };
+      const gen = { ...(mode === 'json' ? { responseMimeType: 'application/json', temperature: 0.2 } : { temperature: 0.6 }), ...(noThink ? { thinkingConfig: { thinkingBudget: 0 } } : {}) };
       try { return await postJson(t, url, { contents: [{ parts }], generationConfig: gen }, { 'x-goog-api-key': c.key || '' }, signal); }
       catch (e: any) {
         if (noThink && /\(400\)/.test(e?.msg || '') && /think/i.test(e?.msg || '')) { noThink = false; return call(m); }
@@ -149,14 +174,7 @@ export async function runAI(t: Strings, prov: ProvId, c: ProvCfg, prompt: string
     }
     return j?.candidates?.[0]?.content?.parts?.map((p: any) => p.text || '').join('');
   }
-  if (prov === 'openrouter') return openaiLike(t, 'https://openrouter.ai/api/v1/chat/completions', c.model || PROV.openrouter.model!, c.key || '', prompt, img, signal);
-  if (prov === 'groq') return openaiLike(t, 'https://api.groq.com/openai/v1/chat/completions', c.model || PROV.groq.model!, c.key || '', prompt, img, signal);
-  if (prov === 'ollama') {
-    const base = (c.url || PROV.ollama.url!).replace(/\/$/, '');
-    const msg: any = { role: 'user', content: prompt };
-    if (img) msg.images = [img.b64];
-    const j = await postJson(t, base + '/api/chat', { model: c.model || PROV.ollama.model, stream: false, format: 'json', messages: [msg], options: { temperature: 0.2 } }, {}, signal);
-    return j?.message?.content;
-  }
+  if (prov === 'claude') return claude(t, c.model || PROV.claude.model!, c.key || '', prompt, img, mode, signal);
+  if (prov === 'openai') return openai(t, c.model || PROV.openai.model!, c.key || '', prompt, img, mode, signal);
   throw { msg: 'no engine' } as AiError;
 }

@@ -35,7 +35,7 @@
 <nav><a href="#vi">Tiếng Việt</a><a href="#en">English</a></nav>
 
 <section id="vi" lang="vi">
-<p class="meta">Có hiệu lực từ ngày 25/11/2026 · Nhà phát triển: Tran Hong Quan</p>
+<p class="meta">Có hiệu lực từ ngày 26/11/2026 · Nhà phát triển: Tran Hong Quan</p>
 
 <p>Calo Món Việt là ứng dụng ghi lại bữa ăn và ước tính lượng calo của món ăn Việt Nam. Ứng dụng <b>không có tài khoản người dùng, không chạy quảng cáo, không dùng công cụ phân tích hay theo dõi</b>, và nhà phát triển không có máy chủ nào nhận dữ liệu của bạn.</p>
 
@@ -55,11 +55,12 @@
   <tr><th>Chế độ</th><th>Dữ liệu được gửi đi</th></tr>
   <tr><td>Không dùng AI / Nhận diện offline</td><td>Không gửi gì. Ảnh được xử lý ngay trên điện thoại.</td></tr>
   <tr><td>Google Gemini</td><td>Ảnh món ăn (đã thu nhỏ) hoặc đoạn mô tả bạn nhập được gửi tới Google để nhận diện, bằng khoá API của chính bạn. Xem <a href="https://policies.google.com/privacy">Chính sách quyền riêng tư của Google</a> và <a href="https://ai.google.dev/gemini-api/terms">Điều khoản Gemini API</a>.</td></tr>
-  <tr><td>OpenRouter / Groq</td><td>Tương tự: ảnh hoặc mô tả được gửi tới dịch vụ bạn chọn, bằng khoá API của bạn, theo chính sách của dịch vụ đó.</td></tr>
-  <tr><td>Ollama</td><td>Ảnh được gửi tới máy chủ Ollama do bạn tự chạy trong mạng của mình.</td></tr>
+  <tr><td>Claude (Anthropic)</td><td>Ảnh hoặc mô tả được gửi tới Anthropic bằng khoá API của bạn. Xem <a href="https://www.anthropic.com/legal/privacy">Chính sách quyền riêng tư của Anthropic</a>.</td></tr>
+  <tr><td>ChatGPT (OpenAI)</td><td>Ảnh hoặc mô tả được gửi tới OpenAI bằng khoá API của bạn. Xem <a href="https://openai.com/policies/privacy-policy">Chính sách quyền riêng tư của OpenAI</a>.</td></tr>
   <tr><td>Chia sẻ sang ChatGPT</td><td>Ứng dụng chỉ mở bảng chia sẻ của hệ thống; bạn tự quyết định gửi ảnh sang ứng dụng khác.</td></tr>
 </table>
 <p>Ảnh chỉ được gửi khi bạn chủ động bấm nhận diện. Ứng dụng không gửi kèm tên, vị trí, danh bạ hay mã thiết bị.</p>
+<p><b>Tư vấn dinh dưỡng bằng AI:</b> khi bạn bấm "Phân tích", ứng dụng gửi bản tóm tắt nhật ký 7 ngày gần nhất (tên món, số gam, calo, đạm/tinh bột/béo, lượng nước, số ly cà phê và mục tiêu của bạn; không kèm ảnh) tới dịch vụ AI bạn đã nhập khoá (Gemini, Claude hoặc ChatGPT). Kết quả chỉ mang tính chất tham khảo, không phải lời khuyên y tế.</p>
 
 <h2>3. Thông báo</h2>
 <p>Nếu bạn bật nhắc uống nước hoặc nhắc tổng kết bữa ăn mỗi tối, ứng dụng xin quyền gửi thông báo. Các lời nhắc (kể cả nội dung tổng kết calo, số bữa đã ghi) được tạo và hẹn giờ ngay trên điện thoại, không qua máy chủ nào.</p>
@@ -84,7 +85,7 @@
 
 <section id="en" lang="en">
 <h1 style="font-size:1.4rem">Privacy Policy — Calo Món Việt</h1>
-<p class="meta">Effective 25 November 2026 · Developer: Tran Hong Quan</p>
+<p class="meta">Effective 26 November 2026 · Developer: Tran Hong Quan</p>
 
 <p>Calo Món Việt is an app for logging meals and estimating the calories of Vietnamese dishes. The app has <b>no user accounts, no ads, and no analytics or tracking</b>, and the developer runs no server that receives your data.</p>
 
@@ -104,11 +105,12 @@
   <tr><th>Mode</th><th>What is sent</th></tr>
   <tr><td>No AI / Offline recognition</td><td>Nothing. The photo is processed on your phone.</td></tr>
   <tr><td>Google Gemini</td><td>The (downscaled) meal photo or your text description is sent to Google for recognition, using your own API key. See <a href="https://policies.google.com/privacy">Google's Privacy Policy</a> and the <a href="https://ai.google.dev/gemini-api/terms">Gemini API Terms</a>.</td></tr>
-  <tr><td>OpenRouter / Groq</td><td>Likewise, the photo or description is sent to the service you chose, with your API key, under that service's policy.</td></tr>
-  <tr><td>Ollama</td><td>The photo is sent to an Ollama server you run on your own network.</td></tr>
+  <tr><td>Claude (Anthropic)</td><td>The photo or description is sent to Anthropic using your API key. See <a href="https://www.anthropic.com/legal/privacy">Anthropic's Privacy Policy</a>.</td></tr>
+  <tr><td>ChatGPT (OpenAI)</td><td>The photo or description is sent to OpenAI using your API key. See <a href="https://openai.com/policies/privacy-policy">OpenAI's Privacy Policy</a>.</td></tr>
   <tr><td>Share to ChatGPT</td><td>The app only opens the system share sheet; you decide whether to send the photo to another app.</td></tr>
 </table>
 <p>Photos are sent only when you tap to recognise them. The app does not attach your name, location, contacts or device identifiers.</p>
+<p><b>AI nutrition advice:</b> when you tap "Analyze", the app sends a summary of your last 7 days (dish names, grams, calories, protein/carbs/fat, water, coffee cups and your targets; no photos) to the AI service you entered a key for (Gemini, Claude or ChatGPT). The result is for reference only and is not medical advice.</p>
 
 <h2>3. Notifications</h2>
 <p>If you turn on water reminders or the evening meal check-in, the app asks for permission to show notifications. Reminders, including the calorie and meal summary they show, are created and scheduled on the device, without any server.</p>

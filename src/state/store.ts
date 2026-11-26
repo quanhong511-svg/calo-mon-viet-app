@@ -7,7 +7,8 @@ import * as Sharing from 'expo-sharing';
 import { useSyncExternalStore } from 'react';
 import { Linking, Platform } from 'react-native';
 
-import { itemsFromAI, parseJson, photoPrompt, PROV, runAI, SRC, textPrompt, type AiCfg, type AiError, type ProvId } from '@/lib/ai';
+import { advicePrompt } from '@/lib/advice';
+import { ADVICE_PROVS, itemsFromAI, parseJson, photoPrompt, PROV, runAI, SRC, textPrompt, type AiCfg, type AiError, type ProvId } from '@/lib/ai';
 import { findMeal, guessMeal, mk, newData, pad, todayIso, toSaved, uid, addDays, type Data, type EditItem } from '@/lib/core';
 import { STRINGS, type Lang, type Strings } from '@/lib/i18n';
 import { parseText } from '@/lib/parse-text';
@@ -19,7 +20,8 @@ import { scheduleCoffee } from '@/lib/coffee-remind';
 import { MEAL_REMIND_DEFAULT, mealTimesOf, scheduleMealRemind, type MealRemindCfg } from '@/lib/meal-remind';
 import { ensurePermission, remindersSupported, scheduleWater, WATER_DEFAULT, type WaterCfg } from '@/lib/water';
 
-export type SheetName = 'add' | 'text' | 'list' | 'ai' | 'review' | 'macros' | 'cheers';
+export type SheetName = 'add' | 'text' | 'list' | 'ai' | 'review' | 'macros' | 'cheers' | 'advice';
+export type Advice = { busy: boolean; text: string | null; err: string | null; at: number | null; prov: string | null };
 export type Alt = { id: string; p: number };
 export type Review = {
   mealId: string | null; items: EditItem[]; servings: number; meal: number; photo: string | null; source?: string; note?: string; alts?: Alt[]; altSel?: string;
@@ -33,6 +35,7 @@ type State = {
   toast: { msg: string; onTap?: () => void; id: number } | null; range: number; netMeta: NetMeta; busy: boolean;
   /** thu gọn thẻ So sánh 3 ngày (nhớ giữa các lần mở app) */
   cmpHidden: boolean;
+  advice: Advice;
   /** ngày hôm nay, đổi lúc qua nửa đêm (để màn hình vẽ lại) */
   today: string;
   /** giờ hiện tại (0–23), cập nhật mỗi phút để màn hình vẽ lại khi qua giờ */
@@ -49,6 +52,7 @@ let s: State = {
   viewDate: todayIso(), tab: 'home', sheet: null, rv: null, listTarget: null, pending: null, photo: null,
   cfg: cfg0, prov: cfg0.prov && PROV[cfg0.prov] ? cfg0.prov : 'none', aiMsg: null, gptOpen: false, local: null,
   toast: null, range: [7, 14, 30, 90].includes(store.get<number>('range') || 0) ? store.get<number>('range')! : 7, netMeta: null, busy: false, cmpHidden: store.get<boolean>('cmp-hidden') === true,
+  advice: { busy: false, err: null, text: null, at: null, prov: null, ...(store.get<Partial<Advice>>('advice-last') || {}) },
   today: todayIso(), hour: new Date().getHours(),
 };
 
@@ -85,7 +89,7 @@ export function setRange(r: number) { store.set('range', r); set({ range: r }); 
 export function toggleCompare() { const v = !s.cmpHidden; store.set('cmp-hidden', v); set({ cmpHidden: v }); }
 export function saveCfg(cfg: AiCfg) { store.set('ai-cfg', cfg); set({ cfg, prov: cfg.prov && PROV[cfg.prov] ? cfg.prov : s.prov }); }
 export function setProv(p: ProvId) { saveCfg({ ...s.cfg, prov: p }); set({ prov: p }); }
-export function setProvField(p: ProvId, k: 'key' | 'model' | 'url', v: string) { saveCfg({ ...s.cfg, [p]: { ...(s.cfg[p] || {}), [k]: v } }); }
+export function setProvField(p: ProvId, k: 'key' | 'model', v: string) { saveCfg({ ...s.cfg, [p]: { ...(s.cfg[p] || {}), [k]: v } }); }
 export function goTab(tab: Tab) { set({ tab }); }
 export function shiftDay(n: number) { const d = addDays(s.viewDate, n); if (d > todayIso()) return; set({ viewDate: d }); }
 export function openDay(d: string) { set({ viewDate: d, tab: 'home' }); }
@@ -392,3 +396,28 @@ export async function setCoffeeCfg(p: Partial<CoffeeCfg>) {
   commit((d) => { d.coffeeCfg = { ...coffeeCfgOf(d), ...p }; });
   rescheduleWater(0);
 }
+
+// ---------- tư vấn dinh dưỡng bằng AI ----------
+/** Dịch vụ dùng cho tư vấn: ưu tiên dịch vụ đang chọn, nếu không thì dịch vụ đầu tiên đã có khoá. */
+export function adviceProv(st: { prov: ProvId; cfg: AiCfg } = s): ProvId | null {
+  if (ADVICE_PROVS.includes(st.prov) && st.cfg[st.prov]?.key) return st.prov;
+  return ADVICE_PROVS.find((p) => st.cfg[p]?.key) || null;
+}
+let adviceAc: AbortController | null = null;
+export async function askAdvice() {
+  const prov = adviceProv();
+  if (!prov || s.advice.busy) return;
+  const t = tr();
+  adviceAc = new AbortController();
+  set({ advice: { ...s.advice, busy: true, err: null } });
+  try {
+    const txt = (await runAI(t, prov, s.cfg[prov] || {}, advicePrompt(s.data, s.today, t, s.lang), null, adviceAc.signal, undefined, 'text'))?.trim();
+    if (!txt) throw { msg: t.errNet };
+    const next: Advice = { busy: false, err: null, text: txt, at: Date.now(), prov: SRC[prov] };
+    store.set('advice-last', { text: next.text, at: next.at, prov: next.prov });
+    set({ advice: next });
+  } catch (e: any) {
+    set({ advice: { ...s.advice, busy: false, err: e?.code === 'cancelled' ? null : e?.msg || t.errNet } });
+  } finally { adviceAc = null; }
+}
+export function cancelAdvice() { adviceAc?.abort(); }

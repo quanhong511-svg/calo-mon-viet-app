@@ -27,8 +27,8 @@ const vi = {
   imported: (d: number, m: number) => `Đã nhập ${m} bữa ăn từ ${d} ngày.`, badFile: 'File không đúng định dạng sao lưu của Calo Món Việt.', total: 'Tổng', check: 'cần kiểm tra', sure: 'tin cậy', outside: 'AI ước tính', rename: 'Sửa tên món',
   key: 'API key', model: 'Model', url: 'Địa chỉ máy chủ', keyNote: 'Key chỉ lưu trên máy này.', aiSave: 'Lưu', aiSavedBtn: 'Đã lưu ✓', aiSaved: 'Đã lưu cài đặt AI',
   p_gemini: 'Google Gemini · miễn phí', p_gemini_d: 'Key miễn phí tại Google AI Studio. Có giới hạn lượt/ngày.',
-  p_openrouter: 'OpenRouter · model :free', p_openrouter_d: 'Chọn model miễn phí có hỗ trợ ảnh.', p_groq: 'Groq · miễn phí', p_groq_d: 'Cần model hỗ trợ ảnh (vision).',
-  p_ollama: 'Ollama · máy tính trong mạng nhà', p_ollama_d: 'Cài Ollama trên máy tính, chạy: ollama pull qwen2.5vl:7b. Nhập địa chỉ IP của máy tính (ví dụ http://192.168.1.10:11434).',
+  p_claude: 'Claude (Anthropic) · trả phí', p_claude_d: 'Cần khoá API từ Claude Console. Tính phí theo lượng dùng của tài khoản bạn.',
+  p_openai: 'ChatGPT (OpenAI) · trả phí', p_openai_d: 'Cần khoá API từ OpenAI Platform. Tính phí theo lượng dùng của tài khoản bạn.',
   p_device: 'Trên máy · offline (30 món)', p_device_d: 'Nhận diện ngay trên điện thoại, không cần mạng hay key. Chỉ biết 30 món phổ biến và không ước lượng được số gram (dùng khẩu phần chuẩn, bạn tự chỉnh).',
   p_device_acc: (a: number, b: number) => `Độ chính xác khi thử: đúng ngay ${a}%, có trong 5 gợi ý ${b}%.`, p_device_weak: 'Mô hình hiện tại gần như đoán ngẫu nhiên, cần huấn luyện lại trước khi dùng.',
   localTitle: 'Gợi ý trên máy (offline)', localNote: 'Model nhỏ chạy trên máy, chỉ biết 30 món. Chạm để chọn.', localHint: 'Nhận diện trên máy: khẩu phần chuẩn, hãy chỉnh số gram cho đúng.',
@@ -78,6 +78,13 @@ const vi = {
   },
   chFeast: '😋 Ngon miệng ghê!', chCheers: ['Tuyệt vời!', 'Quá đỉnh!', 'Giữ vững phong độ nhé!', 'Bạn làm tốt lắm!', 'Tự hào về bạn!'],
   chEmpty: 'Hôm nay chưa có thành tích nào', chEmptyHint: (goal: string) => `Thử ghi đủ 3 bữa chính, ăn sát mục tiêu calo hoặc uống đủ ${goal} ml nước để nhận lời chúc nhé!`,
+  errRefusal: 'AI từ chối yêu cầu này. Hãy thử lại hoặc đổi dịch vụ AI.',
+  adTitle: 'Tư vấn dinh dưỡng AI', adEntry: '✨ Tư vấn dinh dưỡng bằng AI', adEntryD: 'AI xem 7 ngày ăn uống gần nhất: đủ năng lượng chưa, đủ chất chưa, nên ăn thêm gì.',
+  adDisclaimer: '⚠️ Nội dung do AI tạo ra, chỉ mang tính chất tham khảo, không phải lời khuyên y tế. Hãy hỏi bác sĩ hoặc chuyên gia dinh dưỡng trước khi thay đổi chế độ ăn, nhất là khi bạn đang có bệnh lý, mang thai hoặc dùng thuốc.',
+  adSend: (prov: string) => `Tóm tắt ăn uống 7 ngày (món, gam, calo, nước, cà phê – không kèm ảnh) sẽ được gửi tới ${prov} bằng khoá API của bạn.`,
+  adRun: 'Phân tích 7 ngày gần nhất', adAgain: 'Phân tích lại', adBusy: 'AI đang phân tích…', adAt: (s: string) => `Phân tích lúc ${s}`,
+  adNeedKey: 'Cần chọn Gemini, Claude hoặc ChatGPT và nhập khoá API trong Cài đặt → Nhận diện ảnh tự động.', adGoSettings: 'Mở Cài đặt',
+  adNoData: 'Chưa có bữa ăn nào trong 7 ngày gần nhất để phân tích.',
 };
 
 export type Strings = typeof vi;
@@ -110,8 +117,8 @@ const en: Strings = {
   imported: (d: number, m: number) => `Imported ${m} meal(s) across ${d} day(s).`, badFile: "This isn't a Calo Món Việt backup file.", total: 'Total', check: 'check', sure: 'confident', outside: 'AI estimate', rename: 'Rename dish',
   key: 'API key', model: 'Model', url: 'Server address', keyNote: 'The key stays on this device.', aiSave: 'Save', aiSavedBtn: 'Saved ✓', aiSaved: 'AI settings saved',
   p_gemini: 'Google Gemini · free', p_gemini_d: 'Free key from Google AI Studio. Daily limits apply.',
-  p_openrouter: 'OpenRouter · :free models', p_openrouter_d: 'Pick a free model that accepts images.', p_groq: 'Groq · free', p_groq_d: 'Needs a vision model.',
-  p_ollama: 'Ollama · computer on your home network', p_ollama_d: "Install Ollama on a computer, run: ollama pull qwen2.5vl:7b. Enter that computer's IP address (e.g. http://192.168.1.10:11434).",
+  p_claude: 'Claude (Anthropic) · paid', p_claude_d: 'Needs an API key from the Claude Console. Billed by usage on your account.',
+  p_openai: 'ChatGPT (OpenAI) · paid', p_openai_d: 'Needs an API key from the OpenAI Platform. Billed by usage on your account.',
   p_device: 'On device · offline (30 dishes)', p_device_d: 'Recognizes the dish right on your phone, no internet or key. Knows only 30 common dishes and cannot estimate grams (uses a standard serving; adjust it yourself).',
   p_device_acc: (a: number, b: number) => `Tested accuracy: right first time ${a}%, in the top 5 ${b}%.`, p_device_weak: 'The current model is close to random guessing; retrain it before relying on it.',
   localTitle: 'On-device suggestions (offline)', localNote: 'A small model running on your device; it knows 30 dishes. Tap to pick.', localHint: 'Recognized on device: standard serving, adjust the grams.',
@@ -161,6 +168,13 @@ const en: Strings = {
   },
   chFeast: '😋 What an appetite!', chCheers: ['Awesome!', 'Brilliant!', 'Keep it up!', 'Great job!', 'So proud of you!'],
   chEmpty: 'No achievements yet today', chEmptyHint: (goal: string) => `Log all 3 main meals, stay close to your calorie goal or drink ${goal} ml of water to earn a cheer!`,
+  errRefusal: 'The AI declined this request. Try again or switch AI service.',
+  adTitle: 'AI nutrition advice', adEntry: '✨ AI nutrition advice', adEntryD: 'AI reviews your last 7 days: enough energy? balanced nutrients? what to add?',
+  adDisclaimer: '⚠️ AI-generated content for reference only, not medical advice. Talk to a doctor or dietitian before changing your diet, especially if you have a health condition, are pregnant or take medication.',
+  adSend: (prov: string) => `A summary of your last 7 days (dishes, grams, calories, water, coffee – no photos) will be sent to ${prov} using your API key.`,
+  adRun: 'Analyze the last 7 days', adAgain: 'Analyze again', adBusy: 'AI is analyzing…', adAt: (s: string) => `Analyzed at ${s}`,
+  adNeedKey: 'Choose Gemini, Claude or ChatGPT and enter an API key in Settings → Automatic photo recognition.', adGoSettings: 'Open Settings',
+  adNoData: 'No meals in the last 7 days to analyze.',
 };
 
 export type Lang = 'vi' | 'en';

@@ -20,7 +20,10 @@ Chụp ảnh món Việt, biết ngay calo. Theo dõi bữa ăn, uống nước,
 Calo Món Việt giúp bạn đếm calo cho bữa ăn hằng ngày, được làm riêng cho món Việt: phở, bún chả, cơm tấm, bánh mì, bún bò Huế, xôi, gỏi cuốn… và hơn 70 món quen thuộc khác.
 
 📸 CHỤP ẢNH LÀ BIẾT CALO
-Chụp hoặc chọn ảnh món ăn, ứng dụng nhận diện món và ước tính calo, đạm, tinh bột, chất béo. Bạn có thể dùng Google Gemini miễn phí bằng khoá của mình, hoặc tự nhập mô tả kiểu "phở bò tô lớn, trà đá".
+Chụp hoặc chọn ảnh món ăn, ứng dụng nhận diện món và ước tính calo, đạm, tinh bột, chất béo. Dùng Google Gemini miễn phí, Claude hoặc ChatGPT bằng khoá API của bạn, hoặc tự nhập mô tả kiểu "phở bò tô lớn, trà đá".
+
+✨ TƯ VẤN DINH DƯỠNG BẰNG AI
+AI xem 7 ngày ăn uống gần nhất và nhận xét: đủ năng lượng chưa, đủ chất chưa, nên thêm món gì. Nội dung chỉ mang tính chất tham khảo, không thay thế tư vấn y tế.
 
 🍜 BẢNG MÓN VIỆT SẴN CÓ
 Không có mạng vẫn ghi được: chọn món trong bảng, chỉnh số gram, ứng dụng tự tính dinh dưỡng.
@@ -65,6 +68,7 @@ Chụp lại màn hình (cần `npx expo start --web --port 8092` đang chạy):
   - Thu thập: Có · Chia sẻ: Không (gửi tới nhà cung cấp dịch vụ xử lý thay mặt người dùng không tính là "chia sẻ").
   - Xử lý tạm thời (ephemeral): Có · Bắt buộc: Không (người dùng có thể dùng chế độ offline).
   - Mục đích: Chức năng ứng dụng.
-- **Mã hoá khi truyền:** Có (HTTPS tới Gemini / OpenRouter / Groq).
+- **Mã hoá khi truyền:** Có (HTTPS tới Gemini / Claude / ChatGPT).
+- Tư vấn AI gửi tóm tắt nhật ký ăn uống (không kèm ảnh) khi người dùng bấm phân tích → khai thêm *Sức khoẻ & thể chất → Thông tin thể chất/dinh dưỡng*: Thu thập: Có, xử lý tạm thời, không bắt buộc, mục đích Chức năng ứng dụng.
 - **Người dùng yêu cầu xoá dữ liệu được không:** Dữ liệu chỉ ở trên máy; gỡ ứng dụng là xoá hết.
 - Không thu thập: vị trí, danh bạ, thông tin cá nhân, sức khoẻ gửi về máy chủ, mã thiết bị, dữ liệu phân tích.

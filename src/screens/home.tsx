@@ -110,6 +110,17 @@ export default function Home() {
 
       <CompareCard />
 
+      <Pressable accessibilityRole="button" onPress={() => openSheet('advice')}>
+        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <Icon name="sparkle" size={22} color={c.accent} />
+          <View style={{ flex: 1, gap: 2 }}>
+            <T bold>{t.adEntry}</T>
+            <T muted style={{ fontSize: 12 }}>{t.adEntryD}</T>
+          </View>
+          <T muted style={{ fontSize: 22 }}>›</T>
+        </Card>
+      </Pressable>
+
       <Row between><T h={2}>{t.mealsTitle}</T>{showExample(data, viewDate) && <T small muted style={{ flexShrink: 1 }}>{t.exNote}</T>}</Row>
 
       <View style={{ gap: 10 }}>

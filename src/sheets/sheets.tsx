@@ -1,14 +1,16 @@
 // Các bảng trượt: thêm bữa, mô tả, tìm món, nhận diện ảnh, kiểm tra/sửa bữa.
 import { useState } from 'react';
-import { Image, Linking, Pressable, TextInput, View } from 'react-native';
+import { ActivityIndicator, Image, Linking, Pressable, TextInput, View } from 'react-native';
 
 import { itemName } from '@/lib/backup';
+import { adviceDays } from '@/lib/advice';
+import { SRC } from '@/lib/ai';
 import { cheersFor } from '@/lib/cheers';
 import { macroTargets, MEAL_ORDER, mk, scaleItem, sum, targetOn } from '@/lib/core';
 import { byId, DB } from '@/lib/foods';
 import { norm } from '@/lib/parse-text';
 import {
-  addFromList, aiManual, deleteReview, describe, dismissSheet, finishLocal, gemQuick, openList, openSheet, pasteFromClipboard, pickPhoto, readPasted, recopyPrompt, saveReview, set, setMacros, startGpt, toast, waterCfgOf, updateReview, useApp, useT,
+  addFromList, aiManual, deleteReview, describe, dismissSheet, finishLocal, gemQuick, openList, openSheet, pasteFromClipboard, pickPhoto, readPasted, recopyPrompt, saveReview, set, setMacros, startGpt, toast, waterCfgOf, adviceProv, askAdvice, cancelAdvice, goTab, updateReview, useApp, useT,
 } from '@/state/store';
 import { Btn, Chips, GeminiBadge, Icon, inputStyle, Note, Row, Seg, Sheet, T, XBtn } from '@/ui/kit';
 import { useColors } from '@/ui/theme';
@@ -16,7 +18,7 @@ import { useColors } from '@/ui/theme';
 export default function Sheets() {
   const { sheet, rv } = useApp();
   const t = useT();
-  const title = sheet === 'add' ? t.addTitle : sheet === 'text' ? t.optText : sheet === 'list' ? t.optList : sheet === 'ai' ? t.aiHow : sheet === 'macros' ? t.mcTitle : sheet === 'cheers' ? t.chTitle : rv?.mealId ? t.rvEdit : t.rvNew;
+  const title = sheet === 'add' ? t.addTitle : sheet === 'text' ? t.optText : sheet === 'list' ? t.optList : sheet === 'ai' ? t.aiHow : sheet === 'macros' ? t.mcTitle : sheet === 'cheers' ? t.chTitle : sheet === 'advice' ? t.adTitle : rv?.mealId ? t.rvEdit : t.rvNew;
   return (
     <Sheet visible={!!sheet} onClose={dismissSheet} title={title}>
       {sheet === 'add' && <AddSheet />}
@@ -26,6 +28,7 @@ export default function Sheets() {
       {sheet === 'review' && <ReviewSheet />}
       {sheet === 'macros' && <MacroSheet />}
       {sheet === 'cheers' && <CheersSheet />}
+      {sheet === 'advice' && <AdviceSheet />}
     </Sheet>
   );
 }
@@ -332,6 +335,47 @@ function CheersSheet() {
         );
       })}
       <Btn full kind="pri" label="OK" onPress={dismissSheet} />
+    </>
+  );
+}
+
+function AdviceSheet() {
+  const { data, today, lang, prov: curProv, cfg, advice } = useApp();
+  const t = useT(), c = useColors();
+  const prov = adviceProv({ prov: curProv, cfg });
+  const hasData = adviceDays(data, today).length > 0;
+  const when = advice.at ? new Date(advice.at).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : '';
+  return (
+    <>
+      <Note>{t.adDisclaimer}</Note>
+      {!prov ? (
+        <>
+          <T small>{t.adNeedKey}</T>
+          <Btn full kind="pri" label={t.adGoSettings} onPress={() => { dismissSheet(); goTab('settings'); }} />
+        </>
+      ) : !hasData ? (
+        <T small muted>{t.adNoData}</T>
+      ) : (
+        <>
+          <T small muted>{t.adSend(SRC[prov])}</T>
+          {advice.busy ? (
+            <Row style={{ gap: 10, flexWrap: 'nowrap' }}>
+              <ActivityIndicator color={c.accent} />
+              <T style={{ flex: 1 }}>{t.adBusy}</T>
+              <Btn small label={t.cancel} onPress={cancelAdvice} />
+            </Row>
+          ) : (
+            <Btn full kind="pri" label={advice.text ? t.adAgain : t.adRun} onPress={askAdvice} />
+          )}
+        </>
+      )}
+      {!!advice.err && <Note>{advice.err}</Note>}
+      {!!advice.text && (
+        <View style={{ gap: 8, padding: 14, borderRadius: 14, borderWidth: 1, borderColor: c.line, backgroundColor: c.bg }}>
+          <T style={{ lineHeight: 22 }} selectable>{advice.text}</T>
+          <T muted style={{ fontSize: 11 }}>{`${t.adAt(when)}${advice.prov ? ` · ${advice.prov}` : ''}`}</T>
+        </View>
+      )}
     </>
   );
 }

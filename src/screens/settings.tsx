@@ -71,7 +71,7 @@ export default function Settings() {
   const [draft, setDraft] = useState<ProvCfg>(pc);
   const [draftProv, setDraftProv] = useState(prov);
   if (draftProv !== prov) { setDraftProv(prov); setDraft(pc); }
-  const FIELDS = ['key', 'model', 'url'] as const;
+  const FIELDS = ['key', 'model'] as const;
   const dirty = FIELDS.some((k) => draft[k] !== undefined && draft[k] !== (pc[k] ?? ''));
   const saveAi = () => {
     const next: ProvCfg = { ...pc };
@@ -114,7 +114,7 @@ export default function Settings() {
     } catch { setMsg({ text: t.badFile, ok: false }); return; }
     setMsg({ text: t.imported(res[0], res[1]), ok: true });
   };
-  const field = (k: 'key' | 'model' | 'url', label: string, def?: string, secret?: boolean) => (
+  const field = (k: 'key' | 'model', label: string, def?: string, secret?: boolean) => (
     <View style={{ gap: 4 }}>
       <T small>{label}</T>
       <TextInput style={inputStyle(c)} value={draft[k] ?? def ?? ''} onChangeText={(v) => setDraft((d) => ({ ...d, [k]: v }))}
@@ -167,11 +167,10 @@ export default function Settings() {
           {P.direct && (
             <>
               {P.key && field('key', t.key, '', true)}
-              {P.local && field('url', t.url, P.url)}
               {field('model', t.model, P.model)}
               <Btn label={dirty ? t.aiSave : t.aiSavedBtn} kind="pri" full disabled={!dirty} onPress={saveAi} />
               <Row>
-                <Pressable onPress={() => Linking.openURL(P.link!)}><T small style={{ color: c.accent }}>{P.local ? 'ollama.com ↗' : t.getKey}</T></Pressable>
+                <Pressable onPress={() => Linking.openURL(P.link!)}><T small style={{ color: c.accent }}>{t.getKey}</T></Pressable>
                 {P.key && <T small muted>{t.keyNote}</T>}
               </Row>
             </>
